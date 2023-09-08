@@ -1,4 +1,4 @@
-"langchain[docarray]"
+langchain[docarray]
 # -U is a must for docarray
 -U docarray
 openai
