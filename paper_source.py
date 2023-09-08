@@ -74,5 +74,5 @@ class PaperSource(object):
                 print('Skipping as this source is from reference section...')
                 continue
             source_list.append(source)
-        print(f'{len(source_list} sources found.')
+        print(f'{len(source_list)} sources found.')
         return source_list
