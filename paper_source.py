@@ -5,6 +5,7 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import DocArrayInMemorySearch
 from langchain.document_loaders import TextLoader
+from tools import *
 
 
 class PaperSource(object):
@@ -66,5 +67,12 @@ class PaperSource(object):
         '''
         print(f'Searching for the related works of {query}...')
         sources: list = self.db_.similarity_search(query)
-        print('Done searching.')
-        return sources
+        source_list = []
+        for source in sources:
+            # Filter the reference sections
+            if contains_arxiv_reference(source.page_content):
+                print('Skipping as this source is from reference section...')
+                continue
+            source_list.append(source)
+        print(f'{len(source_list} sources found.')
+        return source_list
