@@ -38,17 +38,7 @@ class GeneralAgent(object):
 
 
 class Researcher(GeneralAgent):
-    """
-    A specialized agent for professional researchers.
-
-    This agent has expertise in reading and summarizing scientific papers.
-
-    Attributes:
-        role_ (str): The role of the researcher agent.
-
-    Args:
-        model (str, optional): The name of the model to use (default is 'gpt-3.5-turbo').
-    """
+    """A specialized agent act as professional researcher."""
 
     role_: str = "You are a professional researcher, you have a PhD, and you are a professor at Stanford University. \
         Your expertise is in reading and summarizing scientific papers. When given a query, a series of paper content as context, \
