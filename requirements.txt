@@ -1,6 +1,6 @@
 langchain[docarray]
 # -U is a must for docarray
--U docarray
+docarray
 openai
 pypdf
 tiktoken
