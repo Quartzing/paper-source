@@ -82,7 +82,7 @@ class PaperSource:
         
         return docs
 
-    def retrieve(self, query: str) -> List[Document]:
+    def retrieve(self, query: str, num_retrieval: int | None =None) -> List[Document]:
         """
         Search for papers related to a query using text embeddings and cosine distance.
 
@@ -93,7 +93,9 @@ class PaperSource:
             List[Document]: A list of Document objects representing the related papers found.
         """
         print(f'Searching for related works of: {query}...')
-        sources: List[Document] = self.db_.similarity_search(query, k=len(self.papers_))
+        if not num_retrieval:
+            num_retrieval = len(self.papers_)
+        sources: List[Document] = self.db_.similarity_search(query, k=num_retrieval)
         source_list: List[Document] = []
         for source in sources:
             # Filter out reference sections.
