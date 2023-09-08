@@ -1,6 +1,5 @@
-langchain[docarray]
-# -U is a must for docarray
-docarray
+langchain
+chromadb
 openai
 pypdf
 tiktoken
