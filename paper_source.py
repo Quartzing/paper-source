@@ -14,7 +14,7 @@ class PaperSource(object):
         Initializes a PaperSource object with a dictionary of papers and an OpenAI API key.
 
         Args:
-            papers (dict): A dictionary containing paper titles as keys and their corresponding URLs as values.
+            papers (dict): A dictionary containing paper titles as keys and object of class Paper as values.
             openai_api_key (str): The OpenAI API key for text embeddings.
         """
         self.papers_ = papers
@@ -42,19 +42,19 @@ class PaperSource(object):
 
     def papers(self):
         """
-        Returns the dictionary of papers with titles as keys and URLs as values.
+        Returns the dictionary of papers.
 
         Returns:
-            dict: A dictionary containing paper titles as keys and their corresponding URLs as values.
+            dict: A dictionary containing paper titles as keys and Paper objects as values.
         """
         return self.papers_
 
-    def _process_pdf(self, paper):
+    def _process_pdf(self, paper: Paper):
         """
         Download a PDF, extract its content, and split it into text chunks.
 
         Args:
-            paper: A Paper object representing the paper to be processed.
+            paper (Paper): A Paper object representing the paper to be processed.
 
         Returns:
             list: A list of Document objects, each containing a text chunk with metadata.
