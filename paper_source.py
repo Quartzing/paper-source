@@ -1,5 +1,6 @@
 import openai
 import os
+from typing import Dict, List
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
@@ -8,17 +9,17 @@ from langchain.document_loaders import TextLoader
 from tools import *
 
 
-class PaperSource(object):
-    def __init__(self, papers: dict, openai_api_key: str):
+class PaperSource:
+    def __init__(self, papers: Dict[str, Paper], openai_api_key: str):
         """
         Initializes a PaperSource object with a dictionary of papers and an OpenAI API key.
 
         Args:
-            papers (dict): A dictionary containing paper titles as keys and object of class Paper as values.
+            papers (Dict[str, Paper]): A dictionary containing paper titles as keys and object of class Paper as values.
             openai_api_key (str): The OpenAI API key for text embeddings.
         """
-        self.papers_ = papers
-        doc_list = []
+        self.papers_: Dict[str, Paper] = papers
+        doc_list: List[Document] = []
         for title, paper in papers.items():
             docs = self._process_pdf(paper)  # Extract the PDF into chunks and append them to the doc_list.
             doc_list += docs
@@ -38,18 +39,18 @@ class PaperSource(object):
         """
         embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
         # Compute embeddings for each chunk and store them in the database.
-        self.db_ = Chroma.from_documents(doc_list, embeddings)
+        self.db_: Chroma = Chroma.from_documents(doc_list, embeddings)
 
-    def papers(self):
+    def papers(self) -> Dict[str, Paper]:
         """
         Returns the dictionary of papers.
 
         Returns:
-            dict: A dictionary containing paper titles as keys and Paper objects as values.
+            Dict[str, Paper]: A dictionary containing paper titles as keys and Paper objects as values.
         """
         return self.papers_
 
-    def _process_pdf(self, paper: Paper):
+    def _process_pdf(self, paper: Paper) -> List[Document]:
         """
         Download a PDF, extract its content, and split it into text chunks.
 
@@ -57,7 +58,7 @@ class PaperSource(object):
             paper (Paper): A Paper object representing the paper to be processed.
 
         Returns:
-            list: A list of Document objects, each containing a text chunk with metadata.
+            List[Document]: A list of Document objects, each containing a text chunk with metadata.
         """
         # Download the PDF and obtain the file path.
         pdf_path = paper.download()
@@ -80,7 +81,7 @@ class PaperSource(object):
         
         return docs
 
-    def retrieve(self, query: str) -> list:
+    def retrieve(self, query: str) -> List[Document]:
         """
         Search for papers related to a query using text embeddings and cosine distance.
 
@@ -88,11 +89,11 @@ class PaperSource(object):
             query (str): The query string to search for related papers.
 
         Returns:
-            list: A list of Document objects representing the related papers found.
+            List[Document]: A list of Document objects representing the related papers found.
         """
         print(f'Searching for related works of: {query}...')
-        sources: list = self.db_.similarity_search(query)
-        source_list = []
+        sources: List[Document] = self.db_.similarity_search(query)
+        source_list: List[Document] = []
         for source in sources:
             # Filter out reference sections.
             if contains_arxiv_reference(source.page_content):
