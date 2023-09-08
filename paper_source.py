@@ -93,7 +93,7 @@ class PaperSource:
             List[Document]: A list of Document objects representing the related papers found.
         """
         print(f'Searching for related works of: {query}...')
-        sources: List[Document] = self.db_.similarity_search(query)
+        sources: List[Document] = self.db_.similarity_search(query, k=len(self.papers_))
         source_list: List[Document] = []
         for source in sources:
             # Filter out reference sections.
