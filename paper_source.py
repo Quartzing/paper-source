@@ -10,69 +10,95 @@ from tools import *
 
 class PaperSource(object):
     def __init__(self, papers: dict, openai_api_key: str):
-        '''Given a url dict(title: url) and chat with it.
-        args:
-          papers: dict
-            title: key
-            url: value
-          openai_api_key: str
-        '''
+        """
+        Initializes a PaperSource object with a dictionary of papers and an OpenAI API key.
+
+        Args:
+            papers (dict): A dictionary containing paper titles as keys and their corresponding URLs as values.
+            openai_api_key (str): The OpenAI API key for text embeddings.
+        """
         self.papers_ = papers
         doc_list = []
         for title, paper in papers.items():
-            docs = self._process_pdf(paper) # extract the pdf into chuncks and then put it into docs(list)
-            doc_list += docs # push in different paper
+            docs = self._process_pdf(paper)  # Extract the PDF into chunks and append them to the doc_list.
+            doc_list += docs
 
-        '''Embeddings are like following:
-        ['embedding':page_info,
-          '[122143,123213,346346,34325234]':{page_content = 'LLM XXX',
-                                            metadata = {
-                                              source = 'title ',
-                                              pege = int,
-                                            },}]
-        '''
+        """
+        Embeddings are structured as follows:
+        [
+            'embedding': page_info,
+            '[122143,123213,346346,34325234]': {
+                page_content: 'LLM XXX',
+                metadata: {
+                    source: 'title ',
+                    page: int,
+                },
+            },
+        ]
+        """
         embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-        # every chunck compute the embedding and store to the data base
+        # Compute embeddings for each chunk and store them in the database.
         self.db_ = Chroma.from_documents(doc_list, embeddings)
 
     def papers(self):
+        """
+        Returns the dictionary of papers with titles as keys and URLs as values.
+
+        Returns:
+            dict: A dictionary containing paper titles as keys and their corresponding URLs as values.
+        """
         return self.papers_
 
     def _process_pdf(self, paper):
-        '''download pdf and read the PDF and extra to the txt'''
-        # download pdf and return file name
+        """
+        Download a PDF, extract its content, and split it into text chunks.
+
+        Args:
+            paper: A Paper object representing the paper to be processed.
+
+        Returns:
+            list: A list of Document objects, each containing a text chunk with metadata.
+        """
+        # Download the PDF and obtain the file path.
         pdf_path = paper.download()
-        print(f"Loading pdf {pdf_path}")
-        # read the pdf
+        print(f"Loading PDF: {pdf_path}")
+        
+        # Load the PDF content.
         loader = PyPDFLoader(pdf_path)
         pdf = loader.load()
         print(f"Extracting & splitting text from paper: {paper.title}")
-        # initialize text_splitter
+        
+        # Initialize a text splitter.
         text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-        # split the pdf into text chuncks(list)
+        
+        # Split the PDF into text chunks (list of Document objects).
         docs = text_splitter.split_documents(pdf)
-        # give different chunck the same title
+        
+        # Assign the same title to each chunk.
         for doc in docs:
             doc.metadata['source'] = paper.title
+        
         return docs
 
     def retrieve(self, query: str) -> list:
-        '''compute the embeding of input qurey and find the similar ones in docs list with cosine distance
+        """
+        Search for papers related to a query using text embeddings and cosine distance.
+
+        Args:
+            query (str): The query string to search for related papers.
+
         Returns:
-          sources: a list of value, sources = [{page_content = 'LLM XXX',
-                    metadata = {
-                        source = 'title ',
-                        pege = int},
-                  }]
-        '''
-        print(f'Searching for the related works of {query}...')
+            list: A list of Document objects representing the related papers found.
+        """
+        print(f'Searching for related works of: {query}...')
         sources: list = self.db_.similarity_search(query)
         source_list = []
         for source in sources:
-            # Filter the reference sections
+            # Filter out reference sections.
             if contains_arxiv_reference(source.page_content):
-                print('Skipping as this source is from reference section...')
+                print('Skipping as this source is from the reference section...')
                 continue
             source_list.append(source)
         print(f'{len(source_list)} sources found.')
         return source_list
+
