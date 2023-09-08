@@ -21,6 +21,7 @@ class PaperSource(object):
         doc_list = []
         for title, paper in papers.items():
             docs = self._process_pdf(paper)  # Extract the PDF into chunks and append them to the doc_list.
+            doc_list += docs
 
         """
         Embeddings are structured as follows:
