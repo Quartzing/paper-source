@@ -68,7 +68,7 @@ if __name__ == '__main__':
     # urls = ['https://arxiv.org/ftp/arxiv/papers/2309/2309.00240.pdf',
     #         'https://arxiv.org/ftp/arxiv/papers/2309/2309.00087.pdf']
 
-    openai.api_key =  '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'
+    openai.api_key =  ''
     papers = get_papers(query="LLM medical",
                         max_results=2)
     chat = PaperChat(PaperSource(papers, openai.api_key))
