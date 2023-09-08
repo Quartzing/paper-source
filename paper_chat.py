@@ -16,7 +16,7 @@ class PaperChat(object):
         self.paper_source_: PaperSource = paper_source
         self.papers_: List[Paper] = paper_source.papers()
 
-    def query(self, user_query: str) -> Tuple[str, List[str]]:
+    def query(self, user_query: str, num_retrieval: int | None = None) -> Tuple[str, List[str]]:
         """
         Perform a query and provide an answer along with the relevant sources.
 
@@ -28,7 +28,7 @@ class PaperChat(object):
         """
         print(f'Querying {user_query}')
 
-        sources: List[Paper] = self.paper_source_.retrieve(user_query)
+        sources: List[Paper] = self.paper_source_.retrieve(user_query, num_retrieval)
         user_input: str = f"{user_query} with the following paper contents as context for your reference:\n"
         for source in sources:
             user_input += f"{source}\n"
@@ -39,7 +39,7 @@ class PaperChat(object):
         print('Sources: ', sources)
         return answer, sources
 
-    def source_and_summarize(self, user_query: str) -> List[Paper]:
+    def source_and_summarize(self, user_query: str, num_retrieval: int | None = None) -> List[Paper]:
         """
         Find and summarize related works for a user query based on the given paper pool.
 
@@ -50,7 +50,7 @@ class PaperChat(object):
             list: A list of Paper objects with added summary information.
         """
         print(f'Finding related works for {user_query}...')
-        sources: List[Paper] = self.paper_source_.retrieve(user_query)
+        sources: List[Paper] = self.paper_source_.retrieve(user_query, num_retrieval)
         if len(sources) == 0:
             raise ValueError('No sources found.')
         agent: Researcher = Researcher(model='gpt-3.5-turbo')
