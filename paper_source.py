@@ -3,7 +3,7 @@ import os
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores import DocArrayInMemorySearch
+from langchain.vectorstores import Chroma
 from langchain.document_loaders import TextLoader
 from tools import *
 
@@ -33,7 +33,7 @@ class PaperSource(object):
         '''
         embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
         # every chunck compute the embedding and store to the data base
-        self.db_ = DocArrayInMemorySearch.from_documents(doc_list, embeddings)
+        self.db_ = Chroma.from_documents(doc_list, embeddings)
 
     def papers(self):
         return self.papers_
