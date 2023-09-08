@@ -1,7 +1,7 @@
-!pip install "langchain[docarray]"
+"langchain[docarray]"
 # -U is a must for docarray
-!pip install -U docarray
-!pip install openai
-!pip install pypdf
-!pip install tiktoken
-!pip install feedparser
+-U docarray
+openai
+pypdf
+tiktoken
+feedparser
