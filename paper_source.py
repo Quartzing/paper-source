@@ -1,6 +1,7 @@
 import openai
 import os
 from typing import Dict, List
+from langchain.docstore.document import Document
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
