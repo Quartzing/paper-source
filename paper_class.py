@@ -1,6 +1,7 @@
 import os
 import re
 from typing import List, Union, Dict
+from tools import *
 
 
 class Paper(object):
