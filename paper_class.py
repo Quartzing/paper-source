@@ -2,6 +2,9 @@ import os
 import re
 from typing import List, Union, Dict
 from tools import download_link
+import requests
+import feedparser
+import subprocess
 
 
 class Paper(object):
