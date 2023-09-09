@@ -4,7 +4,6 @@ import feedparser
 import re
 import subprocess
 from typing import List, Union, Dict
-from paper_class import Paper
 
 
 def contains_arxiv_reference(input_string: str) -> bool:
