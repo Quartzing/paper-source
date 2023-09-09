@@ -18,7 +18,7 @@ class GeneralAgent(object):
         self.system_message_: Dict[str, Any] = {"role": "system", "content": self.role_}
         self.model_: str = model
 
-    def query(self, user_query: str) -> str:
+    def query(self, user_query: str, temperature: int = 0) -> str:
         """
         Sends a user query to OpenAI and returns the response.
 
@@ -31,7 +31,11 @@ class GeneralAgent(object):
         print(f'Sending request to OpenAI: {user_query}')
         messages = [self.system_message_,
                     {"role": "user", "content": user_query}]
-        response = openai.ChatCompletion.create(model=self.model_, messages=messages)
+        response = openai.ChatCompletion.create(
+            model=self.model_, 
+            messages=messages,
+            temperature=temperature,
+        )
         answer = response.choices[0]["message"]["content"]
         print(f'Response from OpenAI: {answer}')
         return answer
