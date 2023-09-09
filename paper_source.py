@@ -8,6 +8,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import Chroma
 from langchain.document_loaders import TextLoader
 from tools import *
+from paper_class import Paper
 
 
 class PaperSource:

@@ -1,6 +1,7 @@
 import openai
 from paper_source import PaperSource
-from tools import get_papers, Paper
+from tools import get_papers
+from paper_class import Paper
 from agents import Researcher
 from typing import List, Tuple
 
