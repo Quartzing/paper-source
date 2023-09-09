@@ -1,7 +1,7 @@
 import os
 import re
 from typing import List, Union, Dict
-from tools import *
+from tools import download_link
 
 
 class Paper(object):
