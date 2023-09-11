@@ -6,6 +6,8 @@ import requests
 import feedparser
 import subprocess
 import arxiv
+import logging
+logging.basicConfig(level=logging.INFO)
 
 
 class Paper(object):
@@ -78,7 +80,7 @@ class Paper(object):
             str: The arXiv citation.
         """
         author_list: str = ', '.join(self.authors)
-        year: int = self.publish_date.tm_year
+        year: int = self.publish_date.year
         return f'{author_list}, {year}. {self.title}. {self.url}'
 
     def get_APA_citation(self) -> str:
@@ -88,7 +90,7 @@ class Paper(object):
         Returns:
             str: The APA citation.
         """
-        return f'{self.authors[0]} et al. ({self.publish_date.tm_year})'
+        return f'{self.authors[0]} et al. ({self.publish_date.year})'
 
 
 def get_papers(search,
@@ -121,12 +123,10 @@ def get_papers(search,
 
     results: Dict[str, Paper] = {}
     for result in search.results():
-        paper_link: result.entry_id
-        paper_link += '.pdf'
         paper: Paper = Paper(title=result.title,
-                      summary=entry.summary,
-                      url=paper_link,
-                      authors=result.author,
+                      summary=result.summary,
+                      url=result.pdf_url,
+                      authors=[author.name for author in result.authors],
                       publish_date=result.published)
         results[paper.title] = paper
         if download:
