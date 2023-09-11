@@ -6,6 +6,8 @@ import requests
 import feedparser
 import subprocess
 import arxiv
+import logging
+logging.basicConfig(level=logging.INFO)
 
 
 class Paper(object):
@@ -78,7 +80,7 @@ class Paper(object):
             str: The arXiv citation.
         """
         author_list: str = ', '.join(self.authors)
-        year: int = self.publish_date.tm_year
+        year: int = self.publish_date.year
         return f'{author_list}, {year}. {self.title}. {self.url}'
 
     def get_APA_citation(self) -> str:
@@ -88,9 +90,10 @@ class Paper(object):
         Returns:
             str: The APA citation.
         """
-        return f'{self.authors[0]} et al. ({self.publish_date.tm_year})'
+        return f'{self.authors[0]} et al. ({self.publish_date.year})'
 
-def get_papers(search_results,
+
+def get_papers(search,
                download: bool = False) -> Dict[str, Paper]:
     """
     Search for papers on arXiv and optionally download them.
@@ -105,22 +108,15 @@ def get_papers(search_results,
     Returns:
         Dict[str, Paper]: A dictionary of Paper objects with titles as keys.
     """
-    print(f"Searching {query} from arxiv... (max #results: {max_results})")
-    # Perform the arXiv search using the arXiv API
-    # base_url: str = "http://export.arxiv.org/api/query?"
-    # search_query: str = f"search_query=all:{query}&start=0&max_results={max_results}&sortBy={sort_type}&sortOrder={sort_order}"
-
-    # response: requests.Response = requests.get(base_url + search_query)
-    # feed: feedparser.FeedParserDict = feedparser.parse(response.text)
+    output_directory: str = "arxiv_papers"
+    os.makedirs(output_directory, exist_ok=True)
 
     results: Dict[str, Paper] = {}
-    for result in search_results():
-        paper_link: result.entry_id
-        paper_link += '.pdf'
+    for result in search.results():
         paper: Paper = Paper(title=result.title,
-                      summary=entry.summary,
-                      url=paper_link,
-                      authors=result.author
+                      summary=result.summary,
+                      url=result.pdf_url,
+                      authors=[author.name for author in result.authors],
                       publish_date=result.published)
         results[paper.title] = paper
         if download:
@@ -128,32 +124,17 @@ def get_papers(search_results,
 
     return results
         
-                   
-    # Create a directory to store the downloaded papers
-    output_directory: str = "arxiv_papers"
-    os.makedirs(output_directory, exist_ok=True)
-
-    # results: Dict[str, Paper] = {}
-    # Loop through the search results and download papers
-                   
-    # for entry in feed.entries:
-    #     paper_link: str = [link for link in entry.links if link.type == "application/pdf"][0].href
-    #     paper_link += '.pdf'
-    #     paper: Paper = Paper(title=entry.title,
-    #                   summary=entry.summary,
-    #                   url=paper_link,
-    #                   authors=[author['name'] for author in entry.authors],
-    #                   publish_date=entry.published_parsed)
-    #     results[paper.title] = paper
-    #     if download:
-    #         paper.download(use_title=True)
-
-    # return results
 
 if __name__ == '__main__':
+    search = arxiv.Search(
+        query = "au:Yanrui Du AND ti:LLM",
+        max_results = 10,
+        sort_by = arxiv.SortCriterion.SubmittedDate,
+        sort_order = arxiv.SortOrder.Descending
+    )
+    
     results: Dict[str, Paper] = get_papers(
-        query="LLM medical",
-        max_results=10,
+        search,
         download=False,
     )
 
