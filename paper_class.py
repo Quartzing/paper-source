@@ -108,15 +108,6 @@ def get_papers(search,
     Returns:
         Dict[str, Paper]: A dictionary of Paper objects with titles as keys.
     """
-    # print(f"Searching {query} from arxiv... (max #results: {max_results})")
-    # Perform the arXiv search using the arXiv API
-    # base_url: str = "http://export.arxiv.org/api/query?"
-    # search_query: str = f"search_query=all:{query}&start=0&max_results={max_results}&sortBy={sort_type}&sortOrder={sort_order}"
-
-    # response: requests.Response = requests.get(base_url + search_query)
-    # feed: feedparser.FeedParserDict = feedparser.parse(response.text)
-
-    # Create a directory to store the downloaded papers
     output_directory: str = "arxiv_papers"
     os.makedirs(output_directory, exist_ok=True)
     print("test")
@@ -135,23 +126,6 @@ def get_papers(search,
     return results
         
 
-    # results: Dict[str, Paper] = {}
-    # Loop through the search results and download papers
-                   
-    # for entry in feed.entries:
-    #     paper_link: str = [link for link in entry.links if link.type == "application/pdf"][0].href
-    #     paper_link += '.pdf'
-    #     paper: Paper = Paper(title=entry.title,
-    #                   summary=entry.summary,
-    #                   url=paper_link,
-    #                   authors=[author['name'] for author in entry.authors],
-    #                   publish_date=entry.published_parsed)
-    #     results[paper.title] = paper
-    #     if download:
-    #         paper.download(use_title=True)
-
-    # return results
-
 if __name__ == '__main__':
     search = arxiv.Search(
         query = "au:Yanrui Du AND ti:LLM",
@@ -164,11 +138,6 @@ if __name__ == '__main__':
         search,
         download=False,
     )
-    # results: Dict[str, Paper] = get_papers(
-    #     query="LLM medical",
-    #     max_results=10,
-    #     download=False,
-    # )
 
     for title, paper in results.items():
         print(paper.get_arxiv_citation())
