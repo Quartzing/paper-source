@@ -110,7 +110,6 @@ def get_papers(search,
     """
     output_directory: str = "arxiv_papers"
     os.makedirs(output_directory, exist_ok=True)
-    print("test")
 
     results: Dict[str, Paper] = {}
     for result in search.results():
