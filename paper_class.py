@@ -52,7 +52,9 @@ class Paper(object):
         if os.path.exists(file_path):
             print(f"The file '{file_path}' already exists locally.")
         else:
-            download_link(url, file_path)
+            print('test')
+            search.result.download_pdf()
+            # download_link(url, file_path)
 
         return file_path
 
@@ -121,6 +123,7 @@ def get_papers(search,
         results[paper.title] = paper
         if download:
             paper.download(use_title=True)
+            # result.download_pdf(dirpath=output_directory)
 
     return results
         
@@ -128,14 +131,14 @@ def get_papers(search,
 if __name__ == '__main__':
     search = arxiv.Search(
         query = "au:Yanrui Du AND ti:LLM",
-        max_results = 10,
+        max_results = 3,
         sort_by = arxiv.SortCriterion.SubmittedDate,
         sort_order = arxiv.SortOrder.Descending
     )
     
     results: Dict[str, Paper] = get_papers(
         search,
-        download=False,
+        download=True,
     )
 
     for title, paper in results.items():

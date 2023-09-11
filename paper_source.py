@@ -66,6 +66,7 @@ class PaperSource:
         pdf_path = paper.download()
         print(f"Loading PDF: {pdf_path}")
         
+        
         # Load the PDF content.
         loader = PyPDFLoader(pdf_path)
         pdf = loader.load()
