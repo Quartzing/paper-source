@@ -45,7 +45,7 @@ class PaperSource:
         # UUID1: Generates a UUID based on the host's MAC address and current time.
         db_uuid = uuid.uuid1()
         # Compute embeddings for each chunk and store them in the database. Each with a unique id to avoid conflicts.
-        print(f'Initiating vectordb {db_uuid} with {len(doc_list)} papers.')
+        print(f'Initiating vectordb {db_uuid} with {len(doc_list)} documents from {len(self.papers_)} papers.')
         self.db_: Chroma = Chroma.from_documents(
             documents=doc_list,
             embedding=embedding,
