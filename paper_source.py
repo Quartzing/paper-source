@@ -1,6 +1,6 @@
 import openai
 import os
-from typing import Dict, 
+from typing import Dict, List
 import uuid
 from langchain.docstore.document import Document
 from langchain.document_loaders import PyPDFLoader
