@@ -1,6 +1,7 @@
 import openai
 import os
-from typing import Dict, List
+from typing import Dict, 
+import uuid
 from langchain.docstore.document import Document
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -39,9 +40,17 @@ class PaperSource:
             },
         ]
         """
-        embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
-        # Compute embeddings for each chunk and store them in the database.
-        self.db_: Chroma = Chroma.from_documents(doc_list, embeddings)
+        # Get embedding from OpenAI.
+        embedding = OpenAIEmbeddings(openai_api_key=openai_api_key)
+        # UUID1: Generates a UUID based on the host's MAC address and current time.
+        db_uuid = uuid.uuid1()
+        # Compute embeddings for each chunk and store them in the database. Each with a unique id to avoid conflicts.
+        print(f'Initiating vectordb {db_uuid} with {len(doc_list)} papers.')
+        self.db_: Chroma = Chroma.from_documents(
+            documents=doc_list,
+            embedding=embedding,
+            collection_name=db_uuid,
+        )
 
     def papers(self) -> Dict[str, Paper]:
         """
