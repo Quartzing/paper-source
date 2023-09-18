@@ -1,6 +1,6 @@
 import openai
 from paper_source import PaperSource
-from paper_class import Paper, get_papers
+from paper_class import Paper, PaperCollection
 from agents import Researcher
 from typing import List, Tuple
 
@@ -69,8 +69,10 @@ if __name__ == '__main__':
     #         'https://arxiv.org/ftp/arxiv/papers/2309/2309.00087.pdf']
 
     openai.api_key =  ''
-    papers = get_papers(query="LLM medical",
-                        max_results=2)
-    chat = PaperChat(PaperSource(papers, openai.api_key))
+    paper_collection = PaperCollection()
+
+    paper_collection.add_from_arxiv(query="LLM medical",
+                                    max_results=2)
+    chat = PaperChat(PaperSource(paper_collection.papers, openai.api_key))
     prompt = ''''Medical Scene - Text-Only Modality - Medical Q&A (Specialized Knowledge).'''
     sources = chat.source_and_summarize(prompt)
