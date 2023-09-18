@@ -93,36 +93,35 @@ class Paper(object):
         return f'{self.authors[0]} et al. ({self.publish_date.year})'
 
 
-def get_papers(search,
-               download: bool = False) -> Dict[str, Paper]:
-    """
-    Search for papers on arXiv and optionally download them.
+class PaperCollection(object):
+    def __init__(self):
+        self.papers = {}
 
-    Args:
-        query (str): The search query. Use example `au:XXX AND ti:XXXX` 
-        max_results (int): The maximum number of results to retrieve.
-        download (bool, optional): Whether to download the papers. Defaults to False.
-        sort_type (str, optional): The sorting type for the search results. Defaults to "SubmittedDate".
-        sort_order (str, optional): The sorting order for the search results. Defaults to "Descending".
+    def add_paper(self, paper: Paper):
+        self.papers[paper.title] = paper
 
-    Returns:
-        Dict[str, Paper]: A dictionary of Paper objects with titles as keys.
-    """
-    output_directory: str = "arxiv_papers"
-    os.makedirs(output_directory, exist_ok=True)
-
-    results: Dict[str, Paper] = {}
-    for result in search.results():
-        paper: Paper = Paper(title=result.title,
-                      summary=result.summary,
-                      url=result.pdf_url,
-                      authors=[author.name for author in result.authors],
-                      publish_date=result.published)
-        results[paper.title] = paper
-        if download:
-            paper.download(use_title=True)
-
-    return results
+    def add_from_arxiv(self,
+                       search,
+                       download: bool = False):
+        """
+        Search for papers on arXiv and optionally download them.
+    
+        Args:
+            search: A container of arXiv search results.
+    
+        """
+        output_directory: str = "arxiv_papers"
+        os.makedirs(output_directory, exist_ok=True)
+    
+        for result in search.results():
+            paper: Paper = Paper(title=result.title,
+                          summary=result.summary,
+                          url=result.pdf_url,
+                          authors=[author.name for author in result.authors],
+                          publish_date=result.published)
+            self.papers[paper.title] = paper
+            if download:
+                paper.download(use_title=True)
         
 
 if __name__ == '__main__':
@@ -132,12 +131,14 @@ if __name__ == '__main__':
         sort_by = arxiv.SortCriterion.SubmittedDate,
         sort_order = arxiv.SortOrder.Descending
     )
+
+    paper_collection = PaperCollection()
     
-    results: Dict[str, Paper] = get_papers(
+    paper_collection.add_from_arxiv(
         search,
         download=False,
     )
 
-    for title, paper in results.items():
+    for title, paper in paper_collection.papers.items():
         print(paper.get_arxiv_citation())
         print(paper.get_APA_citation())
