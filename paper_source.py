@@ -15,7 +15,6 @@ from abc import ABC, abstractmethod
 
 class PaperSource(ABC):
     def __init__(self, 
-                 papers: Dict[str, Paper], 
                  openai_api_key: str):
         """
         Initializes with a dictionary of papers and an OpenAI API key.
