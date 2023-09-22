@@ -1,9 +1,14 @@
+import openai
+import os
 from abc import ABC, abstractmethod
 from typing import Dict, List
 import uuid
 from langchain.docstore.document import Document
+from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import Chroma
+from langchain.document_loaders import TextLoader
 from tools import *
 from paper_class import Paper
 
