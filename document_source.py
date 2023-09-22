@@ -1,3 +1,8 @@
+# To handle the issue https://discuss.streamlit.io/t/issues-with-chroma-and-sqlite/47950/5
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 from typing import Dict, List
 import uuid
 from langchain.docstore.document import Document
