@@ -10,24 +10,26 @@ from langchain.vectorstores import Chroma
 from langchain.document_loaders import TextLoader
 from tools import *
 from paper_class import Paper
-from abc import ABC, abstractmethod
 
 
-class _PaperSourceBase(ABC):
+class PaperSource:
     def __init__(self, 
                  papers: Dict[str, Paper], 
-                 openai_api_key: str):
+                 openai_api_key: str,
+                 ignore_references: bool = True):
         """
-        Initializes with a dictionary of papers and an OpenAI API key.
+        Initializes a PaperSource object with a dictionary of papers and an OpenAI API key.
 
         Args:
             papers (Dict[str, Paper]): A dictionary containing paper titles as keys and object of class Paper as values.
             openai_api_key (str): The OpenAI API key for text embeddings.
+            ignore_references (bool): Whether to ignore the chunks containing references.
         """
+        self.ignore_references_ = ignore_references
         self.papers_: Dict[str, Paper] = papers
         doc_list: List[Document] = []
         for title, paper in papers.items():
-            docs = self._process_paper(paper)  # Extract the PDF into chunks and append them to the doc_list.
+            docs = self._process_pdf(paper)  # Extract the PDF into chunks and append them to the doc_list.
             doc_list += docs
 
         """
@@ -64,59 +66,7 @@ class _PaperSourceBase(ABC):
         """
         return self.papers_
 
-    @abstractmethod
-    def _process_paper(self, paper: Paper) -> List[Document]:
-        """
-        Process the paper.
-
-        Args:
-            paper (Paper): A Paper object representing the paper to be processed.
-
-        Returns:
-            List[Document]: A list of Document objects, each containing a text chunk with metadata.
-        """
-        raise NotImplementedError("The _process_paper() function is not implemented.")
-        pass
-
-    def retrieve(self, query: str, num_retrieval: int | None =None) -> List[Document]:
-        """
-        Search for papers related to a query using text embeddings and cosine distance.
-
-        Args:
-            query (str): The query string to search for related papers.
-
-        Returns:
-            List[Document]: A list of Document objects representing the related papers found.
-        """
-        print(f'Searching for related works of: {query}...')
-        if not num_retrieval:
-            num_retrieval = len(self.papers_)
-        sources: List[Document] = self.db_.similarity_search(query, k=num_retrieval)
-        print(f'{len(sources)} sources found.')
-        return sources
-
-
-class PaperContentSource(_PaperSourceBase):
-    def __init__(self, 
-                 papers: Dict[str, Paper], 
-                 openai_api_key: str,
-                 ignore_references: bool = True):
-        """
-        Initializes with a dictionary of papers and an OpenAI API key.
-
-        Args:
-            papers (Dict[str, Paper]): A dictionary containing paper titles as keys and object of class Paper as values.
-            openai_api_key (str): The OpenAI API key for text embeddings.
-            ignore_references (bool): Whether to ignore the chunks containing references.
-        """
-        # The ignore references member var should be defined first as we are using it when calling the base class constructor.
-        self.ignore_references_ = ignore_references
-        super().__init__(
-            papers=papers,
-            openai_api_key=openai_api_key,
-        )
-
-    def _process_paper(self, paper: Paper) -> List[Document]:
+    def _process_pdf(self, paper: Paper) -> List[Document]:
         """
         Download a PDF, extract its content, and split it into text chunks.
 
@@ -153,42 +103,19 @@ class PaperContentSource(_PaperSourceBase):
         
         return doc_list
 
-
-class PaperSummarySource(_PaperSourceBase):
-    def __init__(self, 
-                 papers: Dict[str, Paper], 
-                 openai_api_key: str,
-                 chunk_size: int = 2000):
+    def retrieve(self, query: str, num_retrieval: int | None =None) -> List[Document]:
         """
-        Initializes with a dictionary of papers and an OpenAI API key.
+        Search for papers related to a query using text embeddings and cosine distance.
 
         Args:
-            papers (Dict[str, Paper]): A dictionary containing paper titles as keys and object of class Paper as values.
-            openai_api_key (str): The OpenAI API key for text embeddings.
-            chunk_size (int): The size of the chunk to splitting the summary (abstract).
-        """
-        # The chunk_size_ member var should be defined first as we are using it when calling the base class constructor.
-        self.chunk_size_ = chunk_size
-        super().__init__(
-            papers=papers,
-            openai_api_key=openai_api_key,
-        )
-
-    def _process_paper(self, paper: Paper) -> List[Document]:
-        """
-        Split the paper summary into text chunks.
-
-        Args:
-            paper (Paper): A Paper object representing the paper to be processed.
+            query (str): The query string to search for related papers.
 
         Returns:
-            List[Document]: A list of Document objects, each containing its summary (abstract).
+            List[Document]: A list of Document objects representing the related papers found.
         """
-        # Initialize a text splitter.
-        text_splitter = CharacterTextSplitter(chunk_size=self.chunk_size_, chunk_overlap=0)
-        
-        docs = text_splitter.create_documents([paper.summary])
-        for doc in docs:
-            doc.metadata['source'] = paper.title
-
-        return docs
+        print(f'Searching for related works of: {query}...')
+        if not num_retrieval:
+            num_retrieval = len(self.papers_)
+        sources: List[Document] = self.db_.similarity_search(query, k=num_retrieval)
+        print(f'{len(sources)} sources found.')
+        return sources
