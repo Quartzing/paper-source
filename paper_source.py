@@ -13,14 +13,19 @@ from paper_class import Paper
 
 
 class PaperSource:
-    def __init__(self, papers: Dict[str, Paper], openai_api_key: str):
+    def __init__(self, 
+                 papers: Dict[str, Paper], 
+                 openai_api_key: str,
+                 ignore_references: bool = True):
         """
         Initializes a PaperSource object with a dictionary of papers and an OpenAI API key.
 
         Args:
             papers (Dict[str, Paper]): A dictionary containing paper titles as keys and object of class Paper as values.
             openai_api_key (str): The OpenAI API key for text embeddings.
+            ignore_references (bool): Whether to ignore the chunks containing references.
         """
+        self.ignore_references_ = ignore_references
         self.papers_: Dict[str, Paper] = papers
         doc_list: List[Document] = []
         for title, paper in papers.items():
@@ -87,8 +92,14 @@ class PaperSource:
         docs = text_splitter.split_documents(pdf)
         
         # Assign the same title to each chunk.
+        doc_list = []
         for doc in docs:
+            # Filter out reference sections if choose to ignore them.
+            if self.ignore_references_ and contains_arxiv_reference(doc.page_content):
+                print('The reference section is skipped.')
+                continue
             doc.metadata['source'] = paper.title
+            doc_list.append(doc)
         
         return docs
 
@@ -106,13 +117,5 @@ class PaperSource:
         if not num_retrieval:
             num_retrieval = len(self.papers_)
         sources: List[Document] = self.db_.similarity_search(query, k=num_retrieval)
-        source_list: List[Document] = []
-        for source in sources:
-            # Filter out reference sections.
-            if contains_arxiv_reference(source.page_content):
-                print('Skipping as this source is from the reference section...')
-                continue
-            source_list.append(source)
         print(f'{len(source_list)} sources found.')
         return source_list
-
