@@ -38,7 +38,7 @@ class DocumentSource:
         # UUID4: Generates a random UUID in UUID class type.
         db_uuid = str(uuid.uuid4())
         # Compute embeddings for each chunk and store them in the database. Each with a unique id to avoid conflicts.
-        print(f'Initiating vectordb {db_uuid} with {len(doc_list)} documents from {len(self.papers_)} papers.')
+        print(f'Initiating vectordb {db_uuid}.')
         self.db_: Chroma = Chroma.from_documents(
             documents=documents,
             embedding=embedding,
