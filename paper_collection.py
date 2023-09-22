@@ -1,4 +1,5 @@
 import os
+from typing import Dict, List
 import arxiv
 from langchain.text_splitter import CharacterTextSplitter
 from paper_class import Paper
@@ -6,29 +7,45 @@ from document_source import DocumentSource
 
 
 class PaperCollection(object):
-    def __init__(self, 
+    def __init__(self,
                  openai_api_key: str,
                  chunk_size: int = 2000):
-        self.papers = {}
-        self.document_source_ = DocumentSource(openai_api_key)
-        # Initialize a text splitter.
-        self.text_splitter_ = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=0)
+        """
+        Initialize a PaperCollection instance.
+
+        Args:
+            openai_api_key (str): The API key for OpenAI.
+            chunk_size (int, optional): The size (in characters) for splitting text chunks. Defaults to 2000.
+        """
+        self.papers: Dict[str, Paper] = {}
+        self.document_source_: DocumentSource = DocumentSource(openai_api_key)
+        self.text_splitter_: CharacterTextSplitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=0)
 
     def add_paper(self, paper: Paper):
+        """
+        Add a Paper object to the collection.
+
+        Args:
+            paper (Paper): The paper to add.
+        """
         print(f"Adding paper {paper.title} to the collection...")
         if paper.title in self.papers:
-            print(f"Paper {paper.title} already existed in the collection.")
+            print(f"Paper {paper.title} already exists in the collection.")
             return
 
         self.papers[paper.title] = paper
-        # Split the PDF into text chunks (list of Document objects).
         docs = self.text_splitter_.create_documents([paper.summary])
         for doc in docs:
             doc.metadata['source'] = paper.title
-        
         self.document_source_.add_documents(docs)
 
-    def add_paper_dict(self, paper_dict: dict[str, Paper]):
+    def add_paper_dict(self, paper_dict: Dict[str, Paper]):
+        """
+        Add multiple papers to the collection from a dictionary.
+
+        Args:
+            paper_dict (Dict[str, Paper]): A dictionary of papers to add.
+        """
         self.papers.update(paper_dict)
         for _, paper in paper_dict.items():
             self.add_paper(paper)
@@ -38,42 +55,53 @@ class PaperCollection(object):
                        download: bool = False):
         """
         Search for papers on arXiv and optionally download them.
-    
+
         Args:
             search: A container of arXiv search results.
-    
+            download (bool, optional): Whether to download the papers. Defaults to False.
         """
         output_directory: str = "arxiv_papers"
         os.makedirs(output_directory, exist_ok=True)
-    
+
         for result in search.results():
-            paper: Paper = Paper(title=result.title,
-                          summary=result.summary,
-                          url=result.pdf_url,
-                          authors=[author.name for author in result.authors],
-                          publish_date=result.published)
+            paper: Paper = Paper(
+                title=result.title,
+                summary=result.summary,
+                url=result.pdf_url,
+                authors=[author.name for author in result.authors],
+                publish_date=result.published,
+            )
             self.add_paper(paper)
             if download:
                 paper.download(use_title=True)
-                
-    def get_papers_by_topic(self, 
+
+    def get_papers_by_topic(self,
                             topic: str,
                             num_retrieval: int = 5) -> dict[str, Paper]:
+        """
+        Retrieve papers related to a specific topic.
+
+        Args:
+            topic (str): The topic to search for.
+            num_retrieval (int, optional): The number of papers to retrieve. Defaults to 5.
+
+        Returns:
+            Dict[str, Paper]: A dictionary of papers related to the topic.
+        """
         print(f"Sourcing the papers related to the topic {topic}...")
         source_documents = self.document_source_.retrieve(
             query=topic,
             num_retrieval=num_retrieval,
         )
-        
+
         paper_dict = {}
         for doc in source_documents:
             title = doc.metadata['source']
             if title not in paper_dict:
                 print(f"Found paper {title};")
                 paper_dict[title] = self.papers[title]
-        
-        return paper_dict
 
+        return paper_dict
 
 if __name__ == '__main__':
     from test_utils import get_test_papers
