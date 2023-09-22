@@ -11,8 +11,7 @@ from langchain.vectorstores import Chroma
 
 
 class DocumentSource:
-    def __init__(self, 
-                 documents: list[Document], 
+    def __init__(self,
                  openai_api_key: str):
         """
         Initializes with a dictionary of papers and an OpenAI API key.
@@ -39,11 +38,14 @@ class DocumentSource:
         db_uuid = str(uuid.uuid4())
         # Compute embeddings for each chunk and store them in the database. Each with a unique id to avoid conflicts.
         print(f'Initiating vectordb {db_uuid}.')
-        self.db_: Chroma = Chroma.from_documents(
-            documents=documents,
-            embedding=embedding,
+        self.db_: Chroma = Chroma(
+            embedding_function=embedding,
             collection_name=db_uuid,
         )
+
+    def add_documents(self, documents: list[Document]):
+        print(f'Adding {len(documents)} documents into database.')
+        self.db_.add_documents(documents=documents)
 
     def retrieve(self, query: str, num_retrieval: int | None =None) -> List[Document]:
         """

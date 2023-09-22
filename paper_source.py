@@ -22,15 +22,12 @@ class PaperSource:
         """
         self.ignore_references_ = ignore_references
         self.papers_: Dict[str, Paper] = papers
-        doc_list: List[Document] = []
-        for title, paper in papers.items():
-            docs = self._process_pdf(paper)  # Extract the PDF into chunks and append them to the doc_list.
-            doc_list += docs
-            
         self.document_source_ = DocumentSource(
-            documents=doc_list,
             openai_api_key=openai_api_key,
         )
+        for title, paper in papers.items():
+            docs = self._process_pdf(paper)  # Extract the PDF into chunks and append them to the doc_list.
+            self.document_source_.add_documents(docs)
 
     def papers(self) -> Dict[str, Paper]:
         """
@@ -93,10 +90,11 @@ class PaperSource:
 
 if __name__ == '__main__':
     from test_utils import get_test_papers
+    import os
     
     paper_source = PaperSource(
         papers=get_test_papers(),
-        openai_api_key='',
+        openai_api_key=os.getenv('OPENAI_API_KEY'),
         ignore_references=True,
     )
     
