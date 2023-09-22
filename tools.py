@@ -25,20 +25,36 @@ def contains_arxiv_reference(input_string: str) -> bool:
     # If a match is found, return True; otherwise, return False
     return bool(match)
 
-def download_link(url: str, filepath: str) -> None:
+def download_link(url: str, filepath: str, max_retry: int = 3) -> None:
     """
     Download a file from a URL and save it to a specified filepath.
 
     Args:
         url (str): The URL to download the file from.
         filepath (str): The filepath to save the downloaded file.
+        max_retry (int): The max number of retrying.
+    
+    Raises:
+        ValueError: when max_retry <= 0.
+        ConnectionError: when downloading failed after max_retry times of retrying.
     """
-    print(f"Downloading {url} to {filepath}...")
-    # Download the file using wget
-    cmd = f"wget -U NoSuchBrowser/1.0 -O {filepath} {url}"
-    try:
-        subprocess.call(cmd, shell=True)
-        print(f"The file '{filepath}' has been downloaded successfully.")
-    except Exception as e:
-        print("Failed to download the file.")
-        print(e)
+    if (max_retry <= 0):
+        raise ValueError(f"Invalid max retry: {max_retry}")
+    # Download the file with retrying.
+    for idx, retry in enumerate(range(max_retry)):
+        print(f"[{idx + 1}/{max_retry}] Trying to download {url} to {filepath}...")
+        response = requests.get(url)
+        if (response.ok):
+            with open(filepath, 'wb') as f: 
+                f.write(response.content)
+            return
+        print(f"Failed to download {url} with response code: {response.status}")
+
+    raise ConnectionError(f"Failed to download {url} with {max_retry} retries.")
+
+if __name__ == '__main__':
+    download_link(
+        url='http://arxiv.org/pdf/2309.12314v1',
+        filepath='test_file.pdf',
+        max_retry=2,
+    )
