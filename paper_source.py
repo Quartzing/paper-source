@@ -13,7 +13,7 @@ from paper_class import Paper
 from abc import ABC, abstractmethod
 
 
-class _PaperSource(ABC):
+class PaperSource(ABC):
     def __init__(self, 
                  papers: Dict[str, Paper], 
                  openai_api_key: str):
@@ -96,7 +96,7 @@ class _PaperSource(ABC):
         return sources
 
 
-class PaperContentSource(_PaperSource):
+class PaperContentSource(PaperSource):
     def __init__(self, 
                  papers: Dict[str, Paper], 
                  openai_api_key: str,
@@ -154,7 +154,7 @@ class PaperContentSource(_PaperSource):
         return doc_list
 
 
-class PaperSummarySource(_PaperSource):
+class PaperSummarySource(PaperSource):
     def __init__(self, 
                  papers: Dict[str, Paper], 
                  openai_api_key: str,
