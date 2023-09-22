@@ -1,14 +1,37 @@
 import os
 import arxiv
+from langchain.text_splitter import CharacterTextSplitter
 from paper_class import Paper
+from document_source import DocumentSource
 
 
 class PaperCollection(object):
-    def __init__(self):
+    def __init__(self, 
+                 openai_api_key: str,
+                 chunk_size: int = 2000):
         self.papers = {}
+        self.document_source_ = DocumentSource(openai_api_key)
+        # Initialize a text splitter.
+        self.text_splitter_ = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=0)
 
     def add_paper(self, paper: Paper):
+        print(f"Adding paper {paper.title} to the collection...")
+        if paper.title in self.papers:
+            print(f"Paper {paper.title} already existed in the collection.")
+            return
+
         self.papers[paper.title] = paper
+        # Split the PDF into text chunks (list of Document objects).
+        docs = self.text_splitter_.create_documents([paper.summary])
+        for doc in docs:
+            doc.metadata['source'] = paper.title
+        
+        self.document_source_.add_documents(docs)
+
+    def add_paper_dict(self, paper_dict: dict[str, Paper]):
+        self.papers.update(paper_dict)
+        for _, paper in paper_dict.items():
+            self.add_paper(paper)
 
     def add_from_arxiv(self,
                        search,
@@ -29,12 +52,32 @@ class PaperCollection(object):
                           url=result.pdf_url,
                           authors=[author.name for author in result.authors],
                           publish_date=result.published)
-            self.papers[paper.title] = paper
+            self.add_paper(paper)
             if download:
                 paper.download(use_title=True)
+                
+    def get_papers_by_topic(self, 
+                            topic: str,
+                            num_retrieval: int = 5) -> dict[str, Paper]:
+        print(f"Sourcing the papers related to the topic {topic}...")
+        source_documents = self.document_source_.retrieve(
+            query=topic,
+            num_retrieval=num_retrieval,
+        )
         
+        paper_dict = {}
+        for doc in source_documents:
+            title = doc.metadata['source']
+            if title not in paper_dict:
+                print(f"Found paper {title};")
+                paper_dict[title] = self.papers[title]
+        
+        return paper_dict
+
 
 if __name__ == '__main__':
+    from test_utils import get_test_papers
+
     search = arxiv.Search(
         query = "au:Yanrui Du AND ti:LLM",
         max_results = 3,
@@ -42,13 +85,26 @@ if __name__ == '__main__':
         sort_order = arxiv.SortOrder.Descending
     )
 
-    paper_collection = PaperCollection()
+    paper_collection = PaperCollection(
+        openai_api_key=os.getenv('OPENAI_API_KEY'),
+        chunk_size=1000,
+    )
     
     paper_collection.add_from_arxiv(
         search,
         download=False,
     )
+    
+    paper_collection.add_paper_dict(get_test_papers())
 
     for title, paper in paper_collection.papers.items():
         print(paper.get_arxiv_citation())
         print(paper.get_APA_citation())
+        
+    papers = paper_collection.get_papers_by_topic(
+        topic="CALLA Dataset",
+        num_retrieval=1,
+    )
+    
+    for title, paper in papers.items():
+        print(paper.get_arxiv_citation())
