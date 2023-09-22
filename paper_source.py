@@ -17,13 +17,13 @@ class DocumentSource:
                  documents: list[Document], 
                  openai_api_key: str):
         """
-        Initializes a PaperSource object with a dictionary of papers and an OpenAI API key.
+        Initializes with a dictionary of papers and an OpenAI API key.
 
         Args:
-            papers (Dict[str, Paper]): A dictionary containing paper titles as keys and object of class Paper as values.
+            papers (list[Document]): A list containing documents.
             openai_api_key (str): The OpenAI API key for text embeddings.
 
-        Embeddings are structured as follows:
+        Vector store elements are structured as follows:
         [
             'embedding': page_info,
             '[122143,123213,346346,34325234]': {
@@ -49,13 +49,13 @@ class DocumentSource:
 
     def retrieve(self, query: str, num_retrieval: int | None =None) -> List[Document]:
         """
-        Search for papers related to a query using text embeddings and cosine distance.
+        Search for documents related to a query using text embeddings and cosine distance.
 
         Args:
-            query (str): The query string to search for related papers.
+            query (str): The query string to search for related documents.
 
         Returns:
-            List[Document]: A list of Document objects representing the related papers found.
+            List[Document]: A list of Document objects representing the related documents found.
         """
         print(f'Searching for related works of: {query}...')
         if not num_retrieval:
