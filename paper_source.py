@@ -29,7 +29,7 @@ class PaperSource:
         self.papers_: Dict[str, Paper] = papers
         doc_list: List[Document] = []
         for title, paper in papers.items():
-            docs = self._process_pdf(paper)  # Extract the PDF into chunks and append them to the doc_list.
+            docs = self._process_paper(paper)  # Extract the PDF into chunks and append them to the doc_list.
             doc_list += docs
 
         """
@@ -66,9 +66,9 @@ class PaperSource:
         """
         return self.papers_
 
-    def _process_pdf(self, paper: Paper) -> List[Document]:
+    def _process_paper(self, paper: Paper) -> List[Document]:
         """
-        Download a PDF, extract its content, and split it into text chunks.
+        Process a paper.
 
         Args:
             paper (Paper): A Paper object representing the paper to be processed.
@@ -119,3 +119,7 @@ class PaperSource:
         sources: List[Document] = self.db_.similarity_search(query, k=num_retrieval)
         print(f'{len(sources)} sources found.')
         return sources
+
+
+if __name__ == '__main__':
+    paper_source = PaperSource()
