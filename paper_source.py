@@ -101,7 +101,7 @@ class PaperSource:
             doc.metadata['source'] = paper.title
             doc_list.append(doc)
         
-        return docs
+        return doc_list
 
     def retrieve(self, query: str, num_retrieval: int | None =None) -> List[Document]:
         """
