@@ -64,11 +64,11 @@ class PaperChat(object):
         return sources
 
 if __name__ == '__main__':
-    from datetime import datetime
+    from test_utils import get_test_papers
 
     openai.api_key =  ''
 
-    papers = test_utils.get_test_papers()
+    papers = get_test_papers()
 
     chat = PaperChat(PaperSource(papers, openai.api_key))
     prompt = ''''Medical Scene - Text-Only Modality - Medical Q&A (Specialized Knowledge).'''

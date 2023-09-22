@@ -1,3 +1,7 @@
+from paper_class import Paper
+from datetime import datetime
+
+
 def get_test_papers():
     papers = {
         "paper 1": Paper(
