@@ -1,3 +1,7 @@
+# Auto downloads
+arxiv_papers/
+downloads/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
