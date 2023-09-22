@@ -1,3 +1,9 @@
+from typing import Dict, List
+from langchain.docstore.document import Document
+from langchain.document_loaders import PyPDFLoader
+from langchain.text_splitter import CharacterTextSplitter
+# from tools import *
+from paper_class import Paper
 from paper_source import PaperSource
 
 
@@ -60,4 +66,10 @@ class PaperContentSource(PaperSource):
 
 
 if __name__ == '__main__':
-    paper_content_source = PaperContentSource()
+    from test_utils import get_test_papers
+
+    paper_content_source = PaperContentSource(
+        papers=get_test_papers(),
+        openai_api_key='',
+        ignore_references=True,
+    )

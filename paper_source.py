@@ -1,5 +1,6 @@
 import openai
 import os
+from abc import ABC, abstractmethod
 from typing import Dict, List
 import uuid
 from langchain.docstore.document import Document
@@ -10,27 +11,30 @@ from langchain.vectorstores import Chroma
 from langchain.document_loaders import TextLoader
 from tools import *
 from paper_class import Paper
-from abc import ABC, abstractmethod
 
 
 class PaperSource(ABC):
-    def __init__(self, openai_api_key: str):
+    def __init__(self, 
+                 papers: Dict[str, Paper], 
+                 openai_api_key: str,
+                 ignore_references: bool = True):
         """
-        Initializes with a dictionary of papers and an OpenAI API key.
+        Initializes a PaperSource object with a dictionary of papers and an OpenAI API key.
 
         Args:
+            papers (Dict[str, Paper]): A dictionary containing paper titles as keys and object of class Paper as values.
             openai_api_key (str): The OpenAI API key for text embeddings.
+            ignore_references (bool): Whether to ignore the chunks containing references.
         """
-        self.papers_: Dict[str, Paper] = []
+        self.ignore_references_ = ignore_references
+        self.papers_: Dict[str, Paper] = papers
+        doc_list: List[Document] = []
+        for title, paper in papers.items():
+            docs = self._process_pdf(paper)  # Extract the PDF into chunks and append them to the doc_list.
+            doc_list += docs
 
-        # Get embedding from OpenAI.
-        embedding = OpenAIEmbeddings(openai_api_key=openai_api_key)
-        # UUID4: Generates a random UUID in UUID class type.
-        db_uuid = str(uuid.uuid4())
-        # Compute embeddings for each chunk and store them in the database. Each with a unique id to avoid conflicts.
-        print(f'Initiating vectordb {db_uuid} with {len(doc_list)} documents from {len(self.papers_)} papers.')
-        """ Initiallize a vector store.
-        Vector store elements are structured as follows:
+        """
+        Embeddings are structured as follows:
         [
             'embedding': page_info,
             '[122143,123213,346346,34325234]': {
@@ -42,24 +46,17 @@ class PaperSource(ABC):
             },
         ]
         """
-        self.db_: Chroma = Chroma(
-            embedding_function=embedding,
+        # Get embedding from OpenAI.
+        embedding = OpenAIEmbeddings(openai_api_key=openai_api_key)
+        # UUID4: Generates a random UUID in UUID class type.
+        db_uuid = str(uuid.uuid4())
+        # Compute embeddings for each chunk and store them in the database. Each with a unique id to avoid conflicts.
+        print(f'Initiating vectordb {db_uuid} with {len(doc_list)} documents from {len(self.papers_)} papers.')
+        self.db_: Chroma = Chroma.from_documents(
+            documents=doc_list,
+            embedding=embedding,
             collection_name=db_uuid,
         )
-
-    def add_papers(self, papers: dict[str, Paper]):
-        """Add a paper to the object.
-        Args:
-            papers (Dict[str, Paper]): A dictionary containing paper titles as keys and object of class Paper as values.
-        """
-        self.papers_.update(papers)
-        for _, paper in papers.items():
-            self.add_paper(paper)
-
-    def add_paper(self, paper: Paper):
-        """Add a single paper to the source."""
-        docs = self._process_paper(paper)  # Extract the PDF into chunks and append them to the doc_list.
-        self.db_.add_documents(documents=docs)
 
     def papers(self) -> Dict[str, Paper]:
         """
@@ -70,14 +67,10 @@ class PaperSource(ABC):
         """
         return self.papers_
 
-    def get_paper(self, title: str) -> Paper:
-        """Returns the paper with the given title."""
-        return self.papers_[title]
-
     @abstractmethod
     def _process_paper(self, paper: Paper) -> List[Document]:
         """
-        Process the paper.
+        An abstract method to process a paper.
 
         Args:
             paper (Paper): A Paper object representing the paper to be processed.
@@ -85,7 +78,7 @@ class PaperSource(ABC):
         Returns:
             List[Document]: A list of Document objects, each containing a text chunk with metadata.
         """
-        raise NotImplementedError("The _process_paper() function is not implemented.")
+        # Download the PDF and obtain the file path.
         pass
 
     def retrieve(self, query: str, num_retrieval: int | None =None) -> List[Document]:
