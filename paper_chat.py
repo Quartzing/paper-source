@@ -1,6 +1,6 @@
 import openai
 from paper_source import PaperSource
-from paper_class import Paper, PaperCollection
+from paper_class import Paper
 from agents import Researcher
 from typing import List, Tuple
 
@@ -64,15 +64,34 @@ class PaperChat(object):
         return sources
 
 if __name__ == '__main__':
-    # # url='https://www.nature.com/articles/s41586-021-03430-5.pdf'
-    # urls = ['https://arxiv.org/ftp/arxiv/papers/2309/2309.00240.pdf',
-    #         'https://arxiv.org/ftp/arxiv/papers/2309/2309.00087.pdf']
+    from datetime import datetime
 
     openai.api_key =  ''
-    paper_collection = PaperCollection()
 
-    paper_collection.add_from_arxiv(query="LLM medical",
-                                    max_results=2)
-    chat = PaperChat(PaperSource(paper_collection.papers, openai.api_key))
+    papers = {
+        "paper 1": Paper(
+            title="paper 1",
+            summary="",
+            authors=[],
+            url="https://www.nature.com/articles/s41586-021-03430-5.pdf",
+            publish_date=datetime.strptime("2020", "%Y"),
+        ),
+        "paper 2": Paper(
+            title="paper 2",
+            summary="",
+            authors=[],
+            url="https://arxiv.org/pdf/2309.00240",
+            publish_date=datetime.strptime("2020", "%Y"),
+        ),
+        "paper 3": Paper(
+            title="paper 3",
+            summary="",
+            authors=[],
+            url="https://arxiv.org/pdf/2309.00087",
+            publish_date=datetime.strptime("2020", "%Y"),
+        ),
+    }
+
+    chat = PaperChat(PaperSource(papers, openai.api_key))
     prompt = ''''Medical Scene - Text-Only Modality - Medical Q&A (Specialized Knowledge).'''
     sources = chat.source_and_summarize(prompt)
