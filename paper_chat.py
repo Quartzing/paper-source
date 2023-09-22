@@ -1,19 +1,19 @@
 import openai
-from paper_source import PaperSource
+from paper_source import PaperContentSource
 from paper_class import Paper, PaperCollection
 from agents import Researcher
 from typing import List, Tuple
 
 
 class PaperChat(object):
-    def __init__(self, paper_source: PaperSource):
+    def __init__(self, paper_source: PaperContentSource):
         """
         Initialize a PaperChat instance.
 
         Args:
-            paper_source (PaperSource): A PaperSource object providing access to research papers.
+            paper_source (PaperContentSource): A PaperContentSource object providing access to research papers.
         """
-        self.paper_source_: PaperSource = paper_source
+        self.paper_source_: PaperContentSource = paper_source
         self.papers_: List[Paper] = paper_source.papers()
 
     def query(self, user_query: str, num_retrieval: int | None = None) -> Tuple[str, List[str]]:
@@ -73,6 +73,6 @@ if __name__ == '__main__':
 
     paper_collection.add_from_arxiv(query="LLM medical",
                                     max_results=2)
-    chat = PaperChat(PaperSource(paper_collection.papers, openai.api_key))
+    chat = PaperChat(PaperContentSource(paper_collection.papers, openai.api_key))
     prompt = ''''Medical Scene - Text-Only Modality - Medical Q&A (Specialized Knowledge).'''
     sources = chat.source_and_summarize(prompt)
