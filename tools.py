@@ -38,7 +38,7 @@ def download_link(url: str, filepath: str, max_retry: int = 3) -> None:
         ValueError: when max_retry <= 0.
         ConnectionError: when downloading failed after max_retry times of retrying.
     """
-    if (max_retry <= 0):
+    if max_retry <= 0:
         raise ValueError(f"Invalid max retry: {max_retry}")
     # Download the file with retrying.
     for idx, retry in enumerate(range(max_retry)):
@@ -47,14 +47,15 @@ def download_link(url: str, filepath: str, max_retry: int = 3) -> None:
         if (response.ok):
             with open(filepath, 'wb') as f: 
                 f.write(response.content)
+            print(f"Done.")
             return
-        print(f"Failed to download {url} with response code: {response.status}")
+        print(f"Failed to download {url} with response code: {response.status_code}")
 
-    raise ConnectionError(f"Failed to download {url} with {max_retry} retries.")
+    raise ConnectionError(f"Failed to download {url} with max {max_retry} retries.")
 
 if __name__ == '__main__':
     download_link(
-        url='http://arxiv.org/pdf/2309.12314v1',
+        url='http://arxiv.org/pdf/2309.12314v11',
         filepath='test_file.pdf',
         max_retry=2,
     )
