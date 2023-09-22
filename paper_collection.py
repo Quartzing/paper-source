@@ -1,13 +1,14 @@
+import os
+import arxiv
 from paper_class import Paper
 
 
 class PaperCollection(object):
-    def __init__(self,
-                 paper_summary_source: PaperSummarySource):
-        self.paper_summary_source_ = paper_summary_source
+    def __init__(self):
+        self.papers = {}
 
     def add_paper(self, paper: Paper):
-        self.paper_summary_source_.add_paper(paper)
+        self.papers[paper.title] = paper
 
     def add_from_arxiv(self,
                        search,
@@ -28,34 +29,9 @@ class PaperCollection(object):
                           url=result.pdf_url,
                           authors=[author.name for author in result.authors],
                           publish_date=result.published)
-            self.add_paper(paper)
+            self.papers[paper.title] = paper
             if download:
                 paper.download(use_title=True)
-    
-    def get_all_papers(self) -> dict[Paper]:
-        '''Get all papers.'''
-        return self.paper_summary_source_.papers()
-
-    def get_paper(self, title: str) -> Paper:
-        return get_all_papers()[title]
-
-    def get_papers_of_topic(self, query: str, num_retrieval: int = 5) -> dict[str, Paper]:
-        print(f"Collecting papers with topic {query}...")
-        paper_set = set()
-        sources: List[Paper] = self.paper_summary_source_.retrieve(
-            query=query,
-            num_retrieval=num_retrieval,
-        )
-
-        for source in sources:
-            title = source.metadata['source']
-            paper_set.add(title)
-
-        paper_dict = {title: self.get_paper(title) for title in paper_set}
-
-        print(f"{len(paper_dict)} papers found.")
-
-        return paper_dict
         
 
 if __name__ == '__main__':
@@ -67,16 +43,12 @@ if __name__ == '__main__':
     )
 
     paper_collection = PaperCollection()
-
+    
     paper_collection.add_from_arxiv(
         search,
         download=False,
     )
 
-    for title, paper in paper_collection.get_all_papers().items():
-        print(paper.get_arxiv_citation())
-        print(paper.get_APA_citation())
-
-    for title, paper in paper_collection.get_papers_of_topic("Yanrui").items():
+    for title, paper in paper_collection.papers.items():
         print(paper.get_arxiv_citation())
         print(paper.get_APA_citation())
