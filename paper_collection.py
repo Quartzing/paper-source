@@ -40,6 +40,7 @@ class PaperCollection(object):
         return get_all_papers()[title]
 
     def get_papers_of_topic(self, query: str, num_retrieval: int = 5) -> dict[str, Paper]:
+        print(f"Collecting papers with topic {query}...")
         paper_set = set()
         sources: List[Paper] = self.paper_summary_source_.retrieve(
             query=query,
@@ -50,15 +51,17 @@ class PaperCollection(object):
             title = source.metadata['source']
             paper_set.add(title)
 
-        paper_list = {title: self.get_paper(title) for title in paper_set}
+        paper_dict = {title: self.get_paper(title) for title in paper_set}
 
-        return paper_list
+        print(f"{len(paper_dict)} papers found.")
+
+        return paper_dict
         
 
 if __name__ == '__main__':
     search = arxiv.Search(
         query = "au:Yanrui Du AND ti:LLM",
-        max_results = 10,
+        max_results = 3,
         sort_by = arxiv.SortCriterion.SubmittedDate,
         sort_order = arxiv.SortOrder.Descending
     )
@@ -70,6 +73,10 @@ if __name__ == '__main__':
         download=False,
     )
 
-    for title, paper in paper_collection.papers.items():
+    for title, paper in paper_collection.get_all_papers().items():
+        print(paper.get_arxiv_citation())
+        print(paper.get_APA_citation())
+
+    for title, paper in paper_collection.get_papers_of_topic("Yanrui").items():
         print(paper.get_arxiv_citation())
         print(paper.get_APA_citation())
