@@ -1,28 +1,35 @@
-from abc import ABC, abstractmethod
+import openai
+import os
 from typing import Dict, List
 import uuid
 from langchain.docstore.document import Document
+from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import Chroma
+from langchain.document_loaders import TextLoader
 from tools import *
 from paper_class import Paper
 
 
-class PaperSource(ABC):
+class PaperSource:
     def __init__(self, 
                  papers: Dict[str, Paper], 
-                 openai_api_key: str):
+                 openai_api_key: str,
+                 ignore_references: bool = True):
         """
         Initializes a PaperSource object with a dictionary of papers and an OpenAI API key.
 
         Args:
             papers (Dict[str, Paper]): A dictionary containing paper titles as keys and object of class Paper as values.
             openai_api_key (str): The OpenAI API key for text embeddings.
+            ignore_references (bool): Whether to ignore the chunks containing references.
         """
+        self.ignore_references_ = ignore_references
         self.papers_: Dict[str, Paper] = papers
         doc_list: List[Document] = []
         for title, paper in papers.items():
-            docs = self._process_paper(paper)  # Extract the PDF into chunks and append them to the doc_list.
+            docs = self._process_pdf(paper)  # Extract the PDF into chunks and append them to the doc_list.
             doc_list += docs
 
         """
@@ -59,10 +66,9 @@ class PaperSource(ABC):
         """
         return self.papers_
 
-    @abstractmethod
-    def _process_paper(self, paper: Paper) -> List[Document]:
+    def _process_pdf(self, paper: Paper) -> List[Document]:
         """
-        Process a paper.
+        Download a PDF, extract its content, and split it into text chunks.
 
         Args:
             paper (Paper): A Paper object representing the paper to be processed.
@@ -70,7 +76,32 @@ class PaperSource(ABC):
         Returns:
             List[Document]: A list of Document objects, each containing a text chunk with metadata.
         """
-        raise NotImplementedError(f"Please don not use this abstract class.")
+        # Download the PDF and obtain the file path.
+        pdf_path = paper.download()
+        print(f"Loading PDF: {pdf_path}")
+        
+        # Load the PDF content.
+        loader = PyPDFLoader(pdf_path)
+        pdf = loader.load()
+        print(f"Extracting & splitting text from paper: {paper.title}")
+        
+        # Initialize a text splitter.
+        text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+        
+        # Split the PDF into text chunks (list of Document objects).
+        docs = text_splitter.split_documents(pdf)
+        
+        # Assign the same title to each chunk.
+        doc_list = []
+        for doc in docs:
+            # Filter out reference sections if choose to ignore them.
+            if self.ignore_references_ and contains_arxiv_reference(doc.page_content):
+                print('The reference section is skipped.')
+                continue
+            doc.metadata['source'] = paper.title
+            doc_list.append(doc)
+        
+        return doc_list
 
     def retrieve(self, query: str, num_retrieval: int | None =None) -> List[Document]:
         """
