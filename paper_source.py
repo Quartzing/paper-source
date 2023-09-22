@@ -122,4 +122,10 @@ class PaperSource:
 
 
 if __name__ == '__main__':
-    paper_source = PaperSource()
+    from test_utils import get_test_papers
+
+    paper_source = PaperSource(
+        papers=get_test_papers(),
+        openai_api_key='',
+        ignore_references=True,
+    )
