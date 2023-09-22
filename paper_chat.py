@@ -68,22 +68,7 @@ if __name__ == '__main__':
 
     openai.api_key =  ''
 
-    papers = {
-        "paper 1": Paper(
-            title="paper 1",
-            summary="",
-            authors=[],
-            url="https://arxiv.org/pdf/2309.00240",
-            publish_date=datetime.strptime("2020", "%Y"),
-        ),
-        "paper 2": Paper(
-            title="paper 2",
-            summary="",
-            authors=[],
-            url="https://arxiv.org/pdf/2309.00087",
-            publish_date=datetime.strptime("2020", "%Y"),
-        ),
-    }
+    papers = test_utils.get_test_papers()
 
     chat = PaperChat(PaperSource(papers, openai.api_key))
     prompt = ''''Medical Scene - Text-Only Modality - Medical Q&A (Specialized Knowledge).'''
