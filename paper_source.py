@@ -117,5 +117,5 @@ class PaperSource:
         if not num_retrieval:
             num_retrieval = len(self.papers_)
         sources: List[Document] = self.db_.similarity_search(query, k=num_retrieval)
-        print(f'{len(source_list)} sources found.')
-        return source_list
+        print(f'{len(sources)} sources found.')
+        return sources
