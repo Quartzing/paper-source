@@ -1,3 +1,8 @@
+# To handle the issue https://discuss.streamlit.io/t/issues-with-chroma-and-sqlite/47950/5
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 from typing import Dict, List
 import uuid
 from langchain.docstore.document import Document
@@ -32,13 +37,14 @@ class DocumentSource:
         # UUID4: Generates a random UUID in UUID class type.
         db_uuid = str(uuid.uuid4())
         # Compute embeddings for each chunk and store them in the database. Each with a unique id to avoid conflicts.
-        print(f'Initiating vectordb {db_uuid} with {len(doc_list)} documents from {len(self.papers_)} papers.')
-        self.db_: Chroma = Chroma.from_documents(
+        print(f'Initiating vectordb {db_uuid}.')
+        self.db_: Chroma = Chroma(
             embedding_function=embedding,
             collection_name=db_uuid,
         )
-        
+
     def add_documents(self, documents: list[Document]):
+        print(f'Adding {len(documents)} documents into database.')
         self.db_.add_documents(documents=documents)
 
     def retrieve(self, query: str, num_retrieval: int | None =None) -> List[Document]:
