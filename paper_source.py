@@ -1,15 +1,10 @@
-import openai
-import os
 from typing import Dict, List
-import uuid
 from langchain.docstore.document import Document
 from langchain.document_loaders import PyPDFLoader
-from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores import Chroma
-from langchain.document_loaders import TextLoader
 from tools import *
 from paper_class import Paper
+from document_source import DocumentSource
 
 
 class PaperSource:
@@ -31,30 +26,10 @@ class PaperSource:
         for title, paper in papers.items():
             docs = self._process_pdf(paper)  # Extract the PDF into chunks and append them to the doc_list.
             doc_list += docs
-
-        """
-        Embeddings are structured as follows:
-        [
-            'embedding': page_info,
-            '[122143,123213,346346,34325234]': {
-                page_content: 'LLM XXX',
-                metadata: {
-                    source: 'title ',
-                    page: int,
-                },
-            },
-        ]
-        """
-        # Get embedding from OpenAI.
-        embedding = OpenAIEmbeddings(openai_api_key=openai_api_key)
-        # UUID4: Generates a random UUID in UUID class type.
-        db_uuid = str(uuid.uuid4())
-        # Compute embeddings for each chunk and store them in the database. Each with a unique id to avoid conflicts.
-        print(f'Initiating vectordb {db_uuid} with {len(doc_list)} documents from {len(self.papers_)} papers.')
-        self.db_: Chroma = Chroma.from_documents(
+            
+        self.document_source_ = DocumentSource(
             documents=doc_list,
-            embedding=embedding,
-            collection_name=db_uuid,
+            openai_api_key=openai_api_key,
         )
 
     def papers(self) -> Dict[str, Paper]:
@@ -103,7 +78,7 @@ class PaperSource:
         
         return doc_list
 
-    def retrieve(self, query: str, num_retrieval: int | None =None) -> List[Document]:
+    def retrieve(self, **kwargs) -> List[Document]:
         """
         Search for papers related to a query using text embeddings and cosine distance.
 
@@ -113,9 +88,16 @@ class PaperSource:
         Returns:
             List[Document]: A list of Document objects representing the related papers found.
         """
-        print(f'Searching for related works of: {query}...')
-        if not num_retrieval:
-            num_retrieval = len(self.papers_)
-        sources: List[Document] = self.db_.similarity_search(query, k=num_retrieval)
-        print(f'{len(sources)} sources found.')
-        return sources
+        return self.document_source_.retrieve(**kwargs)
+    
+
+if __name__ == '__main__':
+    from test_utils import get_test_papers
+    
+    paper_source = PaperSource(
+        papers=get_test_papers(),
+        openai_api_key='',
+        ignore_references=True,
+    )
+    
+    print(paper_source.retrieve(query='test', num_retrieval=5))
