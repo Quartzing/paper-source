@@ -5,6 +5,7 @@ sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 from typing import Dict, List
 import uuid
+import math
 from langchain.docstore.document import Document
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
@@ -32,6 +33,7 @@ class DocumentSource:
             },
         ]
         """
+        self.num_docs_ = 0
         # Get embedding from OpenAI.
         embedding = OpenAIEmbeddings(openai_api_key=openai_api_key)
         # UUID4: Generates a random UUID in UUID class type.
@@ -44,10 +46,12 @@ class DocumentSource:
         )
 
     def add_documents(self, documents: list[Document]):
-        print(f'Adding {len(documents)} documents into database.')
+        num_docs = len(documents)
+        self.num_docs_ += num_docs
+        print(f'Adding {num_docs} documents into database.')
         self.db_.add_documents(documents=documents)
 
-    def retrieve(self, query: str, num_retrieval: int | None =None) -> List[Document]:
+    def retrieve(self, query: str, num_retrieval: int | None = None) -> List[Document]:
         """
         Search for documents related to a query using text embeddings and cosine distance.
 
@@ -58,8 +62,11 @@ class DocumentSource:
             List[Document]: A list of Document objects representing the related documents found.
         """
         print(f'Searching for related works of: {query}...')
+        # Default number of retrieval is set to be sqrt(num_docs) based on the assumption that the important docs is in Plato distribution.
         if not num_retrieval:
-            num_retrieval = len(self.papers_)
+            num_retrieval = int(math.sqrt(self.num_docs_))
+            print(f"Using the default num_retrieval = {num_retrieval} from totally {self.num_docs_} docs based on the Plato distribution assumption.")
+
         sources: List[Document] = self.db_.similarity_search(query, k=num_retrieval)
         print(f'{len(sources)} sources found.')
         return sources

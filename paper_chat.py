@@ -28,7 +28,10 @@ class PaperChat(object):
         """
         print(f'Querying {user_query}')
 
-        sources: List[Paper] = self.paper_source_.retrieve(user_query, num_retrieval)
+        sources: List[Paper] = self.paper_source_.retrieve(
+            query=user_query,
+            num_retrieval=num_retrieval,
+        )
         user_input: str = f"{user_query} with the following paper contents as context for your reference:\n"
         for source in sources:
             user_input += f"{source}\n"
@@ -50,7 +53,10 @@ class PaperChat(object):
             list: A list of Paper objects with added summary information.
         """
         print(f'Finding related works for {user_query}...')
-        sources: List[Paper] = self.paper_source_.retrieve(user_query, num_retrieval)
+        sources: List[Paper] = self.paper_source_.retrieve(
+            query=user_query,
+            num_retrieval=num_retrieval,
+        )
         if len(sources) == 0:
             raise ValueError('No sources found.')
         agent: Researcher = Researcher(model='gpt-3.5-turbo')
@@ -65,8 +71,9 @@ class PaperChat(object):
 
 if __name__ == '__main__':
     from test_utils import get_test_papers
+    import os
 
-    openai.api_key =  ''
+    openai.api_key = os.getenv('OPENAI_API_KEY')
 
     papers = get_test_papers()
 
