@@ -1,3 +1,4 @@
+import functools
 import openai
 from langchain.docstore.document import Document
 from paper_source import PaperSource
@@ -19,10 +20,10 @@ class PaperCollectionChat(object):
             paper_source (PaperSource): A PaperSource object providing access to research papers.
         """
         self.paper_collection_ = paper_collection
-        self.paper_source_ = functools.partial(PaperSource(
+        self.paper_source_ = functools.partial(PaperSource,
             openai_api_key=openai_api_key,
             ignore_references=ignore_references,
-        ))
+        )
 
     def _source(self, **kwargs) -> list[(Document, int)]:
         """
@@ -65,7 +66,7 @@ class PaperCollectionChat(object):
         print('Sources: ', sources)
         return answer, sources
 
-    def source_and_summarize(self, **kwargs) -> List[(Document, int)]:
+    def source_and_summarize(self, **kwargs) -> List[tuple]:
         """
         Find and summarize related works for a user query based on the given paper pool.
 

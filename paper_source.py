@@ -20,6 +20,9 @@ class PaperSource:
             openai_api_key (str): The OpenAI API key for text embeddings.
             ignore_references (bool): Whether to ignore the chunks containing references.
         """
+        if len(papers) == 0:
+            raise ValueError("No papers was provided.")
+
         self.ignore_references_ = ignore_references
         self.papers_: Dict[str, Paper] = papers
         self.document_source_ = DocumentSource(
