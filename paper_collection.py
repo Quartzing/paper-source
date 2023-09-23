@@ -75,24 +75,18 @@ class PaperCollection(object):
             if download:
                 paper.download(use_title=True)
 
-    def get_papers_by_topic(self,
-                            topic: str,
-                            num_retrieval: int = 5) -> dict[str, Paper]:
+    def query_papers(self, **kwargs) -> dict[str, Paper]:
         """
-        Retrieve papers related to a specific topic.
+        Retrieve papers related to a specific queried topic.
 
         Args:
-            topic (str): The topic to search for.
-            num_retrieval (int, optional): The number of papers to retrieve. Defaults to 5.
+            **kwargs (dict): The args used by retrieve function of DocumentSource class.
 
         Returns:
             Dict[str, Paper]: A dictionary of papers related to the topic.
         """
-        print(f"Sourcing the papers related to the topic {topic}...")
-        source_documents = self.document_source_.retrieve(
-            query=topic,
-            num_retrieval=num_retrieval,
-        )
+        print(f"Sourcing the papers related to with query {str(kwargs)}...")
+        source_documents = self.document_source_.retrieve(**kwargs)
 
         paper_dict = {}
         for doc in source_documents:
@@ -129,8 +123,8 @@ if __name__ == '__main__':
         print(paper.get_arxiv_citation())
         print(paper.get_APA_citation())
         
-    papers = paper_collection.get_papers_by_topic(
-        topic="CALLA Dataset",
+    papers = paper_collection.query_papers(
+        query="CALLA Dataset",
         num_retrieval=1,
     )
     
