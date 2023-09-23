@@ -95,14 +95,27 @@ class PaperCollectionChat(object):
 
 
 if __name__ == '__main__':
-    from test_utils import get_test_papers
     import os
+    import arxiv
+    from test_utils import get_test_papers
 
     openai.api_key = os.getenv('OPENAI_API_KEY')
 
     paper_collection = PaperCollection(
         openai_api_key=os.getenv('OPENAI_API_KEY'),
         chunk_size=1000,
+    )
+    
+    search = arxiv.Search(
+        query = "au:Yanrui Du AND ti:LLM",
+        max_results = 3,
+        sort_by = arxiv.SortCriterion.SubmittedDate,
+        sort_order = arxiv.SortOrder.Descending
+    )
+
+    paper_collection.add_from_arxiv(
+        search,
+        download=False,
     )
     
     paper_collection.add_paper_dict(get_test_papers())
@@ -112,6 +125,7 @@ if __name__ == '__main__':
         openai_api_key=openai.api_key,
         ignore_references=True,
     )
+
     prompt = ''''Medical Scene - Text-Only Modality - Medical Q&A (Specialized Knowledge).'''
     sources = chat.source_and_summarize(
         query=prompt,

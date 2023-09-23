@@ -86,6 +86,9 @@ class PaperCollection(object):
             Dict[str, Paper]: A dictionary of papers related to the topic.
         """
         print(f"Sourcing the papers related to with query {str(kwargs)}...")
+        if len(self.papers) == 0:
+            raise ValueError("The paper collection is empty.")
+
         source_documents = self.document_source_.retrieve(**kwargs)
 
         paper_dict = {}
