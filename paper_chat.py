@@ -16,24 +16,22 @@ class PaperChat(object):
         self.paper_source_: PaperSource = paper_source
         self.papers_: List[Paper] = paper_source.papers()
 
-    def query(self, user_query: str, num_retrieval: int | None = None) -> Tuple[str, List[str]]:
+    def query(self, **kwargs) -> Tuple[str, List[str]]:
         """
         Perform a query and provide an answer along with the relevant sources.
 
         Args:
-            user_query (str): The user's query for information retrieval.
+            **kwargs (dict): The args used by retrieve function of DocumentSource class.
 
         Returns:
             tuple: A tuple containing the answer generated based on the query and a list of relevant source papers.
         """
+        user_query = kwargs['query']
         print(f'Querying {user_query}')
 
-        sources: List[Paper] = self.paper_source_.retrieve(
-            query=user_query,
-            num_retrieval=num_retrieval,
-        )
+        sources: List[Paper] = self.paper_source_.retrieve(**kwargs)
         user_input: str = f"{user_query} with the following paper contents as context for your reference:\n"
-        for source in sources:
+        for source, score in sources:
             user_input += f"{source}\n"
 
         researcher: Researcher = Researcher(model='gpt-3.5-turbo-16k')
@@ -42,31 +40,30 @@ class PaperChat(object):
         print('Sources: ', sources)
         return answer, sources
 
-    def source_and_summarize(self, user_query: str, num_retrieval: int | None = None) -> List[Paper]:
+    def source_and_summarize(self, **kwargs) -> List[Paper]:
         """
         Find and summarize related works for a user query based on the given paper pool.
 
         Args:
-            user_query (str): The user's query for finding related research papers.
+            **kwargs (dict): The args used by retrieve function of DocumentSource class.
 
         Returns:
             list: A list of Paper objects with added summary information.
         """
+        user_query = kwargs['query']
         print(f'Finding related works for {user_query}...')
-        sources: List[Paper] = self.paper_source_.retrieve(
-            query=user_query,
-            num_retrieval=num_retrieval,
-        )
+        sources: List[Paper] = self.paper_source_.retrieve(**kwargs)
         if len(sources) == 0:
             raise ValueError('No sources found.')
         agent: Researcher = Researcher(model='gpt-3.5-turbo')
-        for source in sources:
+        for source, score in sources:
             user_input: str = f"Summarize the following paper contents with exactly ONE concise sentence for how it relates to {user_query}, " \
                              f"output it in the format of 'XXXXXXX (A Question/Method/Model/Concept/Results/Conclusion etc.) was proposed/raised/mentioned/analyzed/found " \
                              f"that XXXXX': {source.page_content}\nPlease do not mention 'this paper' or 'figure' or 'table' in the summary."
             summary: str = agent.query(user_input)
             print(summary)
             source.metadata['summary'] = summary  # Assuming you want to store the summary in source metadata
+            source.metadata['score'] = score
         return sources
 
 if __name__ == '__main__':
@@ -79,4 +76,7 @@ if __name__ == '__main__':
 
     chat = PaperChat(PaperSource(papers, openai.api_key))
     prompt = ''''Medical Scene - Text-Only Modality - Medical Q&A (Specialized Knowledge).'''
-    sources = chat.source_and_summarize(prompt)
+    sources = chat.source_and_summarize(
+        query=prompt,
+        score_threshold=0.4,
+    )

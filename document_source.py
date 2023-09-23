@@ -51,12 +51,18 @@ class DocumentSource:
         print(f'Adding {num_docs} documents into database.')
         self.db_.add_documents(documents=documents)
 
-    def retrieve(self, query: str, num_retrieval: int | None = None) -> List[Document]:
+    def retrieve(self,
+                 query: str,
+                 num_retrieval: int | None = None,
+                 score_threshold: float = 0.5) -> List[Document]:
         """
         Search for documents related to a query using text embeddings and cosine distance.
 
         Args:
             query (str): The query string to search for related documents.
+            num_retrieval (int): The max number of docs to retrieve based on similarity.
+                If None, then use sqrt(num_docs) based on Plato distribution assumption.
+            score_threshold (float): The score between 0 to 1 to filter the retrieved docs when greater.
 
         Returns:
             List[Document]: A list of Document objects representing the related documents found.
@@ -67,6 +73,10 @@ class DocumentSource:
             num_retrieval = int(math.sqrt(self.num_docs_))
             print(f"Using the default num_retrieval = {num_retrieval} from totally {self.num_docs_} docs based on the Plato distribution assumption.")
 
-        sources: List[Document] = self.db_.similarity_search(query, k=num_retrieval)
+        sources: List[Document] = self.db_.similarity_search_with_relevance_scores(
+            query=query, 
+            k=num_retrieval,
+            score_threshold=score_threshold,
+        )
         print(f'{len(sources)} sources found.')
         return sources
