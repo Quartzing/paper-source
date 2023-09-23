@@ -16,23 +16,20 @@ class PaperChat(object):
         self.paper_source_: PaperSource = paper_source
         self.papers_: List[Paper] = paper_source.papers()
 
-    def query(self, user_query: str, **kwargs) -> Tuple[str, List[str]]:
+    def query(self, **kwargs) -> Tuple[str, List[str]]:
         """
         Perform a query and provide an answer along with the relevant sources.
 
         Args:
-            user_query (str): The user's query for information retrieval.
             **kwargs (dict): The args used by retrieve function of DocumentSource class.
 
         Returns:
             tuple: A tuple containing the answer generated based on the query and a list of relevant source papers.
         """
+        user_query = kwargs['query']
         print(f'Querying {user_query}')
 
-        sources: List[Paper] = self.paper_source_.retrieve(
-            query=user_query,
-            **kwargs,
-        )
+        sources: List[Paper] = self.paper_source_.retrieve(**kwargs)
         user_input: str = f"{user_query} with the following paper contents as context for your reference:\n"
         for source, score in sources:
             user_input += f"{source}\n"
@@ -43,22 +40,19 @@ class PaperChat(object):
         print('Sources: ', sources)
         return answer, sources
 
-    def source_and_summarize(self, user_query: str, **kwargs) -> List[Paper]:
+    def source_and_summarize(self, **kwargs) -> List[Paper]:
         """
         Find and summarize related works for a user query based on the given paper pool.
 
         Args:
-            user_query (str): The user's query for information retrieval.
             **kwargs (dict): The args used by retrieve function of DocumentSource class.
 
         Returns:
             list: A list of Paper objects with added summary information.
         """
+        user_query = kwargs['query']
         print(f'Finding related works for {user_query}...')
-        sources: List[Paper] = self.paper_source_.retrieve(
-            query=user_query,
-            **kwargs,
-        )
+        sources: List[Paper] = self.paper_source_.retrieve(**kwargs)
         if len(sources) == 0:
             raise ValueError('No sources found.')
         agent: Researcher = Researcher(model='gpt-3.5-turbo')
@@ -83,6 +77,6 @@ if __name__ == '__main__':
     chat = PaperChat(PaperSource(papers, openai.api_key))
     prompt = ''''Medical Scene - Text-Only Modality - Medical Q&A (Specialized Knowledge).'''
     sources = chat.source_and_summarize(
-        user_query=prompt,
+        query=prompt,
         score_threshold=0.4,
     )
