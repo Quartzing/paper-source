@@ -89,10 +89,10 @@ class PaperCollection(object):
         source_documents = self.document_source_.retrieve(**kwargs)
 
         paper_dict = {}
-        for doc in source_documents:
+        for doc, score in source_documents:
             title = doc.metadata['source']
             if title not in paper_dict:
-                print(f"Found paper {title};")
+                print(f"Found paper {title} with score {score:.2f};")
                 paper_dict[title] = self.papers[title]
 
         return paper_dict

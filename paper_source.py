@@ -98,4 +98,8 @@ if __name__ == '__main__':
         ignore_references=True,
     )
     
-    print(paper_source.retrieve(query='test', num_retrieval=5))
+    print(paper_source.retrieve(
+        query='test',
+        num_retrieval=5,
+        score_threshold=0.4,
+    ))
