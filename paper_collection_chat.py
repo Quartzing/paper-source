@@ -24,6 +24,7 @@ class PaperCollectionChat(object):
             openai_api_key=openai_api_key,
             ignore_references=ignore_references,
         )
+        self.paper_source_dict_ = {}
 
     def _source(self, **kwargs) -> list[(Document, int)]:
         """
@@ -39,9 +40,15 @@ class PaperCollectionChat(object):
         papers: dict[str, Paper] = self.paper_collection_.query_papers(**kwargs)
 
         complete_source_list: list = []
-        for paper in papers:
-            paper_source: PaperSource = self.paper_source_(papers=papers)
-            source_list: list = paper_source.retrieve(**kwargs)
+        for title, paper in papers.items():
+            if title in self.paper_source_dict_:
+                print(f"Paper source for paper {title} already exists.")
+            else:
+                print(f"Creating paper source for paper {title}...")
+                self.paper_source_dict_[title] = self.paper_source_(
+                    papers={title: paper})
+
+            source_list: list = self.paper_source_dict_[title].retrieve(**kwargs)
             if len(source_list) > 1:
                 concat_source = source_list[0]
                 concat_source[0].page_content = '\n\n'.join([source[0].page_content for source in source_list])
