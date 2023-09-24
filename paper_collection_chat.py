@@ -94,10 +94,10 @@ class PaperCollectionChat(object):
         len_user_input = len(user_input)
         if len_user_input < 10000:
             print(f"length of user input is {len_user_input}, employing small researcher...")
-            agent = self.large_researcher_
+            agent = self.small_researcher_
         else:
             print(f"length of user input is {len_user_input}, employing large researcher...")
-            agent = self.small_researcher_
+            agent = self.large_researcher_
         return agent.query(user_input)
 
     def source_and_summarize(self, **kwargs) -> List[tuple]:
