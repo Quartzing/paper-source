@@ -37,9 +37,20 @@ class PaperCollectionChat(object):
                 and a list of relevant source papers and the relevance score.
         """
         papers: dict[str, Paper] = self.paper_collection_.query_papers(**kwargs)
-        paper_source: PaperSource = self.paper_source_(papers=papers)
 
-        return paper_source.retrieve(**kwargs)
+        complete_source_list: list = []
+        for paper in papers:
+            paper_source: PaperSource = self.paper_source_(papers=papers)
+            source_list: list = paper_source.retrieve(**kwargs)
+            if len(source_list) > 1:
+                concat_source = source_list[0]
+                concat_source[0].page_content = '\n\n'.join([source[0].page_content for source in source_list])
+                source_list = [concat_source]
+                print(f'Sources are concatenated into {source_list}')
+
+            complete_source_list += source_list
+
+        return complete_source_list
         
 
     def query(self, **kwargs) -> Tuple[str, List[str]]:
