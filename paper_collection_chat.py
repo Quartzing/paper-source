@@ -100,7 +100,7 @@ class PaperCollectionChat(object):
         sources: List[(Document, int)] = self._source(**kwargs)
         if len(sources) == 0:
             raise ValueError('No sources found.')
-        agent: Researcher = Researcher(model='gpt-3.5-turbo')
+        agent: Researcher = Researcher(model='gpt-3.5-turbo-16k')
         for source, score in sources:
             user_input: str = f"Summarize the following paper contents with exactly ONE concise sentence for how it relates to {user_query}, " \
                              f"output it in the format of 'XXXXXXX (A Question/Method/Model/Concept/Results/Conclusion etc.) was proposed/raised/mentioned/analyzed/found " \
