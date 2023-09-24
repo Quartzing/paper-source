@@ -25,6 +25,9 @@ class PaperCollectionChat(object):
             ignore_references=ignore_references,
         )
         self.paper_source_dict_ = {}
+        # Researcher agents
+        self.large_researcher_: Researcher = Researcher(model='gpt-3.5-turbo-16k')
+        self.small_researcher_: Researcher = Researcher(model='gpt-3.5-turbo')
 
     def _source(self, **kwargs) -> list[(Document, int)]:
         """
@@ -84,6 +87,19 @@ class PaperCollectionChat(object):
         print('Sources: ', sources)
         return answer, sources
 
+    def _summarize(self, user_query: str, source: str) -> str:
+        user_input: str = f"Summarize the following paper contents with exactly ONE concise sentence for how it relates to {user_query}, " \
+                            f"output it in the format of 'XXXXXXX (A Question/Method/Model/Concept/Results/Conclusion etc.) was proposed/raised/mentioned/analyzed/found " \
+                            f"that XXXXX': {source}\nPlease do not mention 'this paper' or 'figure' or 'table' in the summary."
+        len_user_input = len(user_input)
+        if len_user_input < 10000:
+            print(f"length of user input is {len_user_input}, employing small researcher...")
+            agent = self.large_researcher_
+        else:
+            print(f"length of user input is {len_user_input}, employing large researcher...")
+            agent = self.small_researcher_
+        return agent.query(user_input)
+
     def source_and_summarize(self, **kwargs) -> List[tuple]:
         """
         Find and summarize related works for a user query based on the given paper pool.
@@ -100,12 +116,11 @@ class PaperCollectionChat(object):
         sources: List[(Document, int)] = self._source(**kwargs)
         if len(sources) == 0:
             raise ValueError('No sources found.')
-        agent: Researcher = Researcher(model='gpt-3.5-turbo-16k')
         for source, score in sources:
-            user_input: str = f"Summarize the following paper contents with exactly ONE concise sentence for how it relates to {user_query}, " \
-                             f"output it in the format of 'XXXXXXX (A Question/Method/Model/Concept/Results/Conclusion etc.) was proposed/raised/mentioned/analyzed/found " \
-                             f"that XXXXX': {source.page_content}\nPlease do not mention 'this paper' or 'figure' or 'table' in the summary."
-            summary: str = agent.query(user_input)
+            summary: str = self._summarize(
+                user_query=user_query,
+                source=source.page_content,
+            )
             print(summary)
             source.metadata['summary'] = summary  # Assuming you want to store the summary in source metadata
             source.metadata['score'] = score
