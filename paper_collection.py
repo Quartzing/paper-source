@@ -34,7 +34,7 @@ class PaperCollection(object):
             return
 
         self.papers[paper.title] = paper
-        docs = self.text_splitter_.create_documents([paper.summary])
+        docs = self.text_splitter_.create_documents([f'Title: {paper.title}\nAbstract: {paper.summary}'])
         for doc in docs:
             doc.metadata['source'] = paper.title
         self.document_source_.add_documents(docs)
