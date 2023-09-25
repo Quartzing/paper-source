@@ -95,7 +95,7 @@ class PaperCollection(object):
         for doc, score in source_documents:
             title = doc.metadata['source']
             if title not in paper_dict:
-                print(f"Found paper {title} with score {score:.2f};")
+                print(f"Found paper with score {score:.2f}: {title};")
                 paper_dict[title] = self.papers[title]
 
         return paper_dict
