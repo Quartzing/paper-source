@@ -102,7 +102,7 @@ class Paper(object):
             a string of latex bibliography format.
         """
         return LATEX_BIBLIOGRAPHY_TEMPLATE.format(
-            name=self.latex_citation_name(self.title),
+            name=self.latex_citation_name(),
             title=self.title.replace("_", "-"),
             authors=' and '.join(self.authors),
             url=self.url.replace('/pdf/', '/abs/'),
