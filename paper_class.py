@@ -88,11 +88,11 @@ class Paper(object):
         """
         return f'{self.authors[0]} et al. ({self.publish_date.year})'
 
-    def latex_citation_name(self, title: str) -> str:
+    def latex_citation_name(self) -> str:
         if self.on_arxiv:
             return self.url.split('/')[-1]
         else:
-            return title.replace(' ', '-').replace("'", "").replace(",", "-")
+            return self.title.replace(' ', '-').replace("'", "").replace(",", "-")
 
     def get_latex_citation(self) -> str:
         """
