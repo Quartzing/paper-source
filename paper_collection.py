@@ -125,7 +125,7 @@ if __name__ == '__main__':
     
     paper_collection.add_paper_dict(get_test_papers())
 
-    print('\n\n\.join(paper_collection.latex_bibliography()))
+    print('\n\n'.join(paper_collection.latex_bibliography()))
 
     for title, paper in paper_collection.papers.items():
         print(paper.get_arxiv_citation())
