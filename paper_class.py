@@ -5,6 +5,14 @@ from tools import download_link
 import logging
 logging.basicConfig(level=logging.INFO)
 
+LATEX_BIBLIOGRAPHY_TEMPLATE = """@misc{{{name},
+  title={{{title}}},
+  author={{{authors}}},
+  url={{{url}}},
+  date={{{year}}},
+}}
+"""
+
 
 class Paper(object):
     def __init__(self, title: str, summary: str, url: str, authors: List[str], publish_date: Union[str, int, float]):
@@ -87,3 +95,22 @@ class Paper(object):
             str: The APA citation.
         """
         return f'{self.authors[0]} et al. ({self.publish_date.year})'
+
+    @classmethod
+    def latex_citation_name(cls, title: str) -> str:
+        return title.replace(' ', '_').replace("'", "")
+
+    def get_latex_citation(self) -> str:
+        """
+        Get a citation of latex bibliography format.
+
+        Returns:
+            a string of latex bibliography format.
+        """
+        return LATEX_BIBLIOGRAPHY_TEMPLATE.format(
+            name=Paper.latex_citation_name(self.title),
+            title=self.title,
+            authors=', '.join(self.authors),
+            url=self.url.replace('/pdf/', '/abs/'),
+            year=self.publish_date.year,
+        )
