@@ -24,6 +24,21 @@ class PaperCollection(object):
         self.document_source_: DocumentSource = DocumentSource(openai_api_key)
         self.text_splitter_: CharacterTextSplitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=0)
 
+    def get_paper(self, title: str) -> Paper:
+        """
+        Get a paper from the collection.
+
+        Args:
+            title (str): The title of requested paper.
+
+        Returns:
+            The Paper object with the requested title.
+
+        Raises:
+            KeyError: when the paper of the given title not existed in this collection.
+        """
+        return self.papers[title]
+
     def add_paper(self, paper: Paper):
         """
         Add a Paper object to the collection.
