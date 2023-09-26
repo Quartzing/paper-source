@@ -106,7 +106,7 @@ class Paper(object):
 
     def latex_citation_name(self, title: str) -> str:
         if self.on_arxiv:
-            return self.url.split('/')[-1][:-4]
+            return self.url.split('/')[-1]
         else:
             return title.replace(' ', '_').replace("'", "").replace(",", "_")
 
