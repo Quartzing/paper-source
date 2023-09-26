@@ -33,7 +33,7 @@ class Paper(object):
             publish_date (Union[str, int, float]): The publication date of the paper.
             on_arxiv (bool): Whether this paper is on arxiv.
         """
-        self.title: str = self.sanitize_title(title)
+        self.title: str = title
         self.summary: str = summary
         self.url: str = url
         self.authors: List[str] = authors
@@ -67,22 +67,6 @@ class Paper(object):
             download_link(url, file_path)
 
         return file_path
-
-    def sanitize_title(self, title: str) -> str:
-        """
-        Sanitize the title by replacing invalid characters with underscores and removing newline characters.
-
-        Args:
-            title (str): The title to sanitize.
-
-        Returns:
-            str: The sanitized title.
-        """
-        # Replace invalid characters with underscores
-        title = re.sub(r'[\/*?"<>|]', '_', title)
-        # Remove newline characters
-        title = title.replace('\n ', '')
-        return title
 
     def get_arxiv_citation(self) -> str:
         """
