@@ -15,7 +15,13 @@ LATEX_BIBLIOGRAPHY_TEMPLATE = """@misc{{{name},
 
 
 class Paper(object):
-    def __init__(self, title: str, summary: str, url: str, authors: List[str], publish_date: Union[str, int, float]):
+    def __init__(self,
+                 title: str,
+                 summary: str,
+                 url: str,
+                 authors: List[str],
+                 publish_date: Union[str, int, float],
+                 on_arxiv: bool = False):
         """
         Initialize a Paper object.
 
@@ -25,12 +31,14 @@ class Paper(object):
             url (str): The URL where the paper can be downloaded.
             authors (List[str]): A list of author names.
             publish_date (Union[str, int, float]): The publication date of the paper.
+            on_arxiv (bool): Whether this paper is on arxiv.
         """
         self.title: str = self.sanitize_title(title)
         self.summary: str = summary
         self.url: str = url
         self.authors: List[str] = authors
         self.publish_date: Union[str, int, float] = publish_date
+        self.on_arxiv: bool = on_arxiv
 
     def download(self, folder: str = 'downloads', use_title: bool = False) -> str:
         """
@@ -96,9 +104,11 @@ class Paper(object):
         """
         return f'{self.authors[0]} et al. ({self.publish_date.year})'
 
-    @classmethod
-    def latex_citation_name(cls, title: str) -> str:
-        return title.replace(' ', '_').replace("'", "").replace(",", "_")
+    def latex_citation_name(self, title: str) -> str:
+        if self.on_arxiv:
+            return self.url.split('/')[-1]
+        else:
+            return title.replace(' ', '_').replace("'", "").replace(",", "_")
 
     def get_latex_citation(self) -> str:
         """
@@ -108,7 +118,7 @@ class Paper(object):
             a string of latex bibliography format.
         """
         return LATEX_BIBLIOGRAPHY_TEMPLATE.format(
-            name=Paper.latex_citation_name(self.title),
+            name=self.latex_citation_name(self.title),
             title=self.title,
             authors=' and '.join(self.authors),
             url=self.url.replace('/pdf/', '/abs/'),

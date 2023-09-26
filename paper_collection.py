@@ -70,6 +70,7 @@ class PaperCollection(object):
                 url=result.pdf_url,
                 authors=[author.name for author in result.authors],
                 publish_date=result.published,
+                on_arxiv=True,
             )
             self.add_paper(paper)
             if download:
