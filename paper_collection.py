@@ -9,14 +9,17 @@ from document_source import DocumentSource
 class PaperCollection(object):
     def __init__(self,
                  openai_api_key: str,
-                 chunk_size: int = 2000):
+                 chunk_size: int = 2000,
+                 create_embedding: bool = True):
         """
         Initialize a PaperCollection instance.
 
         Args:
             openai_api_key (str): The API key for OpenAI.
             chunk_size (int, optional): The size (in characters) for splitting text chunks. Defaults to 2000.
+            create_embedding (bool): Whether to create embeddings while adding the papers.
         """
+        self.create_embedding_ = create_embedding
         self.papers: Dict[str, Paper] = {}
         self.document_source_: DocumentSource = DocumentSource(openai_api_key)
         self.text_splitter_: CharacterTextSplitter = CharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=0)
@@ -34,6 +37,8 @@ class PaperCollection(object):
             return
 
         self.papers[paper.title] = paper
+        if not self.create_embedding_:
+            return
         docs = self.text_splitter_.create_documents([f'Title: {paper.title}\nAbstract: {paper.summary}'])
         for doc in docs:
             doc.metadata['source'] = paper.title
