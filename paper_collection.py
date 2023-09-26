@@ -75,6 +75,9 @@ class PaperCollection(object):
             if download:
                 paper.download(use_title=True)
 
+    def latex_bibliography(self) -> list:
+        return [paper.get_latex_citation() for paper in self.papers]
+
     def query_papers(self, **kwargs) -> dict[str, Paper]:
         """
         Retrieve papers related to a specific queried topic.
@@ -125,6 +128,7 @@ if __name__ == '__main__':
     for title, paper in paper_collection.papers.items():
         print(paper.get_arxiv_citation())
         print(paper.get_APA_citation())
+        print(paper.get_latex_citation())
         
     papers = paper_collection.query_papers(
         query="CALLA Dataset",
@@ -133,3 +137,6 @@ if __name__ == '__main__':
     
     for title, paper in papers.items():
         print(paper.get_arxiv_citation())
+        print(paper.get_APA_citation())
+        print(paper.get_latex_citation())
+
