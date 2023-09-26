@@ -92,7 +92,7 @@ class Paper(object):
         if self.on_arxiv:
             return self.url.split('/')[-1]
         else:
-            return title.replace(' ', '_').replace("'", "").replace(",", "_")
+            return title.replace(' ', '-').replace("'", "").replace(",", "-")
 
     def get_latex_citation(self) -> str:
         """
@@ -103,7 +103,7 @@ class Paper(object):
         """
         return LATEX_BIBLIOGRAPHY_TEMPLATE.format(
             name=self.latex_citation_name(self.title),
-            title=self.title,
+            title=self.title.replace("_", "-"),
             authors=' and '.join(self.authors),
             url=self.url.replace('/pdf/', '/abs/'),
             year=self.publish_date.year,
