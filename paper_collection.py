@@ -76,7 +76,7 @@ class PaperCollection(object):
                 paper.download(use_title=True)
 
     def latex_bibliography(self) -> list:
-        return [paper.get_latex_citation() for paper in self.papers]
+        return [paper.get_latex_citation() for title, paper in self.papers.items()]
 
     def query_papers(self, **kwargs) -> dict[str, Paper]:
         """
@@ -124,6 +124,8 @@ if __name__ == '__main__':
     )
     
     paper_collection.add_paper_dict(get_test_papers())
+
+    print('\n\n\.join(paper_collection.latex_bibliography()))
 
     for title, paper in paper_collection.papers.items():
         print(paper.get_arxiv_citation())
