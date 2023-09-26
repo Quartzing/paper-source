@@ -98,7 +98,7 @@ class Paper(object):
 
     @classmethod
     def latex_citation_name(cls, title: str) -> str:
-        return title.replace(' ', '_').replace("'", "")
+        return title.replace(' ', '_').replace("'", "").replace(",", "_")
 
     def get_latex_citation(self) -> str:
         """
