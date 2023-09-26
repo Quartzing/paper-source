@@ -110,7 +110,7 @@ class Paper(object):
         return LATEX_BIBLIOGRAPHY_TEMPLATE.format(
             name=Paper.latex_citation_name(self.title),
             title=self.title,
-            authors='and '.join(self.authors),
+            authors=' and '.join(self.authors),
             url=self.url.replace('/pdf/', '/abs/'),
             year=self.publish_date.year,
         )
