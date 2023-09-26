@@ -71,7 +71,7 @@ class Paper(object):
             str: The sanitized title.
         """
         # Replace invalid characters with underscores
-        title = re.sub(r'[\/:*?"<>|]', '_', title)
+        title = re.sub(r'[\/*?"<>|]', '_', title)
         # Remove newline characters
         title = title.replace('\n ', '')
         return title
